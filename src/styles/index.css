@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   Beauty Hue — Global Design System
+   韩系温柔高级感 / Soft Neutral / Calm / Elegant
+   ============================================ */
+
+/* --- Base Reset --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #3A3A3A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* --- Kraft Paper Texture Background --- */
+.bg-kraft {
+  background-color: #F1E4D1;
+  background-image: url('/textures/kraft-paper.webp');
+  background-size: 600px 600px;
+  background-repeat: repeat;
+  position: relative;
+}
+
+/* CSS-only fallback: subtle grain noise */
+.bg-kraft::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Glass Button Base --- */
+@layer components {
+  .glass-btn {
+    @apply relative px-6 py-3 rounded-button cursor-pointer select-none
+           transition-all duration-300 ease-in-out;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #3A3A3A;
+    font-weight: 500;
+  }
+
+  .glass-btn:hover {
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    transform: scale(1.03);
+  }
+
+  .glass-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* Navy CTA Button */
+  .btn-cta {
+    @apply px-8 py-4 rounded-button cursor-pointer select-none
+           transition-all duration-300 ease-in-out font-semibold tracking-wide;
+    background: #162660;
+    color: #ffffff;
+    border: none;
+    font-size: 1rem;
+  }
+
+  .btn-cta:hover {
+    background: #1e3280;
+    box-shadow: 0 8px 24px rgba(22, 38, 96, 0.25);
+    transform: translateY(-2px);
+  }
+
+  .btn-cta:active {
+    transform: translateY(0);
+  }
+
+  /* Photo Frame (Polaroid style) */
+  .photo-frame {
+    background: #FAF6F0;
+    border-radius: 4px;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.04);
+    position: relative;
+  }
+
+  /* Irregular edge simulation */
+  .photo-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+  }
+
+  /* Glass Card (for season cards) */
+  .glass-card {
+    @apply rounded-card overflow-hidden cursor-pointer
+           transition-all duration-500 ease-in-out;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  }
+
+  .glass-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* --- Carousel Edge Fade Mask --- */
+.carousel-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+/* --- Screenshot Flash Effect --- */
+@keyframes flash {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.screenshot-flash {
+  animation: flash 200ms ease-out forwards;
+}
+
+/* --- Color Transition (for test page) --- */
+.color-transition {
+  transition: background-color 700ms ease-in-out;
+}
+
+/* --- Selection Color --- */
+::selection {
+  background: #D0E6FD;
+  color: #162660;
+}
