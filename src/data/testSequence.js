@@ -6,6 +6,7 @@ import { SEASONS, SEASON_KEYS } from './seasonColors';
 export const PHASE1_SEQUENCE = SEASON_KEYS.map((key) => ({
   seasonKey: key,
   color: SEASONS[key].extremeColor,
+  colorName: SEASONS[key].extremeName,
   name: SEASONS[key].name,
   nameCN: SEASONS[key].nameCN,
   phase: 1,
@@ -13,7 +14,7 @@ export const PHASE1_SEQUENCE = SEASON_KEYS.map((key) => ({
 
 /**
  * 阶段2：根据评分取 Top4 季型，各选 1 个日常色精筛
- * @param {Array} currentObjectScores - 当前得分对象，示例：{ brightSpring: 25, coolWinter: 30 }
+ * @param {Object} currentScores - 当前得分对象，示例：{ brightSpring: 25, coolWinter: 30 }
  */
 export const generatePhase2 = (currentScores) => {
   const sorted = Object.entries(currentScores)
@@ -25,6 +26,7 @@ export const generatePhase2 = (currentScores) => {
     return {
       seasonKey: key,
       color: season.dailyColor,
+      colorName: season.dailyName,
       name: season.name,
       nameCN: season.nameCN,
       phase: 2,

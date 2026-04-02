@@ -12,18 +12,18 @@ import { analyzeImageMetrics } from '../engine/colorAnalyzer';
 export default function TestPage() {
   const navigate = useNavigate();
   const frameRef = useRef(null);
-  
+
   // App States
   const [hasStarted, setHasStarted] = useState(false);
   const [image, setImage] = useState(null);
-  
+
   // Test Sequence States
-  const [round, setRound] = useState(0); 
+  const [round, setRound] = useState(0);
   const [phase, setPhase] = useState(1);
   const [sequence, setSequence] = useState(PHASE1_SEQUENCE);
-  const [scores, setScores] = useState({}); 
-  const [systemHistory, setSystemHistory] = useState([]); 
-  const [roundScores, setRoundScores] = useState({}); 
+  const [scores, setScores] = useState({});
+  const [systemHistory, setSystemHistory] = useState([]);
+  const [roundScores, setRoundScores] = useState({});
   const [flash, setFlash] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
@@ -42,7 +42,7 @@ export default function TestPage() {
     const analysis = await analyzeImageMetrics(image, currentColor.color);
     setSystemHistory(prev => [...prev, { key: currentColor.seasonKey, score: analysis.total, phase }]);
     const userScore = (val + 1) * 5;
-    
+
     setScores(prev => ({ ...prev, [currentColor.seasonKey]: (prev[currentColor.seasonKey] || 0) + userScore }));
     setRoundScores(prev => ({ ...prev, [currentRoundKey]: val }));
 
@@ -90,12 +90,12 @@ export default function TestPage() {
         {/* 截图白闪效果 */}
         <AnimatePresence>
           {flash && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.1 }}
-              className="fixed inset-0 z-[100] bg-white pointer-events-none" 
+              className="fixed inset-0 z-[100] bg-white pointer-events-none"
             />
           )}
         </AnimatePresence>
@@ -103,7 +103,7 @@ export default function TestPage() {
         {/* 漂亮毛玻璃 Toast */}
         <AnimatePresence>
           {showToast && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.9 }}
@@ -124,7 +124,7 @@ export default function TestPage() {
               PHASE {phase} — {currentRoundKey + 1} / {TOTAL_ROUNDS}
             </div>
             <div className="w-full h-2.5 bg-black/5 rounded-full overflow-hidden shadow-inner border border-white/20">
-              <motion.div 
+              <motion.div
                 className="h-full bg-navy shadow-[0_0_15px_rgba(22,38,96,0.4)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${((currentRoundKey + 1) / TOTAL_ROUNDS) * 100}%` }}
@@ -136,12 +136,12 @@ export default function TestPage() {
 
         {/* 核心内容布局 */}
         <div className="grow flex w-full relative h-0">
-          
+
           {/* 左侧返回按钮挂扣 */}
           <div className="w-1/12 flex items-center justify-center">
             {hasStarted && round > 0 && (
-              <button 
-                onClick={handlePrevious} 
+              <button
+                onClick={handlePrevious}
                 className="w-12 h-12 flex items-center justify-center rounded-full glass-btn transition-offset hover:-translate-x-1"
               >
                 <ChevronLeft className="w-6 h-6" />
@@ -155,10 +155,10 @@ export default function TestPage() {
               <PhotoUploader onStart={handleStart} />
             ) : (
               <div className="w-full h-full flex items-center justify-center py-4">
-                <PhotoFrame 
-                  image={image} 
-                  currentColorHex={currentColor?.color} 
-                  frameRef={frameRef} 
+                <PhotoFrame
+                  image={image}
+                  currentColorHex={currentColor?.color}
+                  frameRef={frameRef}
                 />
               </div>
             )}
@@ -167,7 +167,7 @@ export default function TestPage() {
           {/* 右侧面板 */}
           <div className="w-3/12 h-full flex items-center justify-start pl-8 pr-12">
             {hasStarted && (
-              <ControlPanel 
+              <ControlPanel
                 currentColor={currentColor}
                 userScore={roundScores[currentRoundKey]}
                 onScore={handleScore}
