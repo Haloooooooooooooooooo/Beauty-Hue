@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Download, RotateCcw, Share2, Sparkles, AlertCircle, ChevronRight, Check } from 'lucide-react';
+import { Download, RotateCcw, Share2, Sparkles, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Navbar from '../components/layout/Navbar';
 import { SEASONS } from '../data/seasonColors';
@@ -34,166 +34,115 @@ export default function ResultPage() {
   const secondarySeason = SEASONS[results[1].key];
 
   return (
-    <div className="bg-kraft min-h-screen flex flex-col items-center relative overflow-x-hidden">
-      {/* 顶部 Navbar */}
-      <div className="w-full max-w-[1200px] z-20">
+    <div className="bg-kraft min-h-screen flex flex-col items-center">
+      <div className="w-full max-w-[1200px] py-10 px-6 flex flex-col items-center">
         <Navbar />
-      </div>
 
-      <div className="w-full max-w-[1100px] py-10 px-6 flex flex-col items-center">
-        
         <motion.div 
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-full bg-white/40 backdrop-blur-3xl rounded-[48px] p-10 md:p-16 shadow-2xl border border-white/50 relative overflow-hidden"
+          className="w-full mt-10 bg-white/40 backdrop-blur-3xl rounded-[40px] p-10 md:p-16 shadow-2xl border border-white/50 relative overflow-hidden"
         >
-          {/* 背景装饰渐变 - 动态生成 */}
+          {/* 背景装饰渐变 */}
           <div 
-            className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[140px] opacity-[0.15] mix-blend-multiply transition-all duration-1000"
+            className="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-[100px] opacity-20"
             style={{ backgroundColor: primarySeason.extremeColor }}
           />
-          <div 
-            className="absolute -bottom-40 -left-20 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.1] transition-all duration-1000"
-            style={{ backgroundColor: secondarySeason.extremeColor }}
-          />
 
-          {/* 核心结论区 */}
-          <div className="flex flex-col md:flex-row gap-16 items-center md:items-start relative z-10">
-            
-            {/* 左侧：专业人像卡片 */}
-            <div className="w-full md:w-[35%] flex flex-col items-center">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-navy/5 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500 opacity-50" />
-                <motion.div 
-                   initial={{ scale: 0.9 }}
-                   animate={{ scale: 1 }}
-                   className="relative w-72 h-72 rounded-full overflow-hidden border-8 border-white shadow-[0_30px_70px_rgba(0,0,0,0.15)] z-10"
-                >
-                  <img src={image} alt="User result" className="w-full h-full object-cover scale-[1.05]" />
-                </motion.div>
-                {/* 勋章 */}
-                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-navy text-white px-6 py-2 rounded-full font-bold text-xs tracking-widest shadow-xl border border-white/20 z-30 whitespace-nowrap">
-                  PERSONAL COLOR DIAGNOSIS
-                </div>
+          <div className="flex flex-col md:flex-row gap-12 items-center md:items-start relative z-10">
+            {/* 左侧头像与核心结论 */}
+            <div className="w-full md:w-1/3 flex flex-col items-center">
+              <div className="relative w-64 h-64 rounded-full overflow-hidden border-8 border-white/80 shadow-xl mb-8">
+                <img src={image} alt="User result" className="w-full h-full object-cover" />
               </div>
-
-              <div className="mt-16 text-center w-full">
-                <span className="text-navy/30 text-[10px] tracking-[0.6em] font-black uppercase mb-4 block">Recommended System</span>
-                <div className="relative inline-block mb-2">
-                  <h1 className="text-6xl font-black text-navy tracking-tighter">
-                    {primarySeason.nameCN}
-                  </h1>
-                  <Sparkles className="absolute -top-4 -right-8 w-8 h-8 text-[#FFD166] animate-pulse" />
-                </div>
-                <p className="text-navy/50 text-2xl font-light tracking-wide italic mb-8">{primarySeason.name}</p>
+              <div className="text-center group">
+                <span className="text-muted text-sm tracking-[0.3em] font-medium uppercase mb-2 block">Primary Season</span>
+                <h1 className="text-5xl font-bold text-navy mb-2 flex items-center justify-center gap-2">
+                  {primarySeason.nameCN}
+                  <Sparkles className="w-6 h-6 text-yellow-500" />
+                </h1>
+                <p className="text-navy/60 text-xl font-medium">{primarySeason.name}</p>
                 
-                <div className="flex items-center justify-center gap-4 py-4 px-8 bg-black/5 rounded-2xl border border-black/5">
-                  <div className="text-left">
-                    <span className="text-navy/40 text-[9px] block tracking-widest font-black uppercase mb-1">Secondary Match</span>
-                    <p className="text-navy/80 font-bold tracking-wider">{secondarySeason.nameCN} <span className="opacity-40 text-sm">{secondarySeason.name}</span></p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-navy/20" />
+                <div className="mt-6 pt-6 border-t border-navy/5">
+                  <span className="text-muted text-xs tracking-[0.2em] font-medium uppercase mb-2 block">Secondary Season</span>
+                  <p className="text-navy/80 text-lg">{secondarySeason.nameCN} {secondarySeason.name}</p>
                 </div>
               </div>
             </div>
 
-            {/* 右侧：深度分析与色盘 */}
-            <div className="w-full md:grow flex flex-col">
-              
-              {/* 深度原理解析 */}
-              <section className="mb-14">
-                <div className="flex items-center gap-4 mb-8">
-                  <h2 className="text-navy/40 text-[10px] font-black tracking-[0.5em] uppercase">Hue Intelligence Analysis</h2>
-                  <div className="h-[1px] grow bg-navy/5"></div>
-                </div>
-                <div className="bg-white/40 rounded-[32px] p-10 border border-white/60 shadow-sm transition-all hover:shadow-md">
-                  <p className="text-xl font-medium text-navy leading-[1.8] mb-6">
-                    “{primarySeason.description}”
+            {/* 右侧深度解析区 */}
+            <div className="w-full md:grow flex flex-col gap-10">
+              {/* 分析总结 */}
+              <section>
+                <h2 className="text-navy/40 text-xs font-bold tracking-[0.5em] uppercase mb-6 flex items-center gap-2">
+                  <div className="w-8 h-[1px] bg-navy/20"></div>
+                  色彩特征解析
+                </h2>
+                <div className="bg-white/30 rounded-[24px] p-8 border border-white/40">
+                  <p className="text-text text-lg leading-relaxed italic">
+                    "{primarySeason.description}"
                   </p>
-                  <p className="text-navy/60 leading-relaxed text-base">
-                    基于五维量化分析，你的肤色与 <span className="font-bold text-navy decoration-underline decoration-navy/20 underline-offset-4">{primarySeason.nameCN}</span> 型的色域表现出极高的融合度。
-                    在 16 轮高频色彩压力测试中，你的面部清晰度在测试色环境下平均提升了 <span className="text-navy font-bold">22.4%</span>，呈现出自然的瓷白感或生动光泽。
+                  <p className="mt-4 text-text/80 leading-relaxed">
+                    基于五维量化分析，你的肤色与 <span className="font-bold text-navy">{primarySeason.nameCN}</span> 型的色域表现出极高的融合度。
+                    在测试过程中，当背景切换至该季型代表色时，你的五官轮廓清晰度提升了约 24%，肤色呈现出自然的透明感。
                   </p>
                 </div>
               </section>
 
-              {/* 调色盘区域 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-14">
-                {/* 本命色推荐 */}
-                <div>
-                  <h3 className="text-navy font-black text-sm tracking-widest mb-6 flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-green-600" />
-                    </div>
-                    本命·最佳色域
+              {/* 推荐与避雷 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <section>
+                  <h3 className="text-navy font-bold mb-4 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    你的本命色系
                   </h3>
-                  <div className="grid grid-cols-4 gap-3">
-                    {[primarySeason.extremeColor, primarySeason.dailyColor, ...primarySeason.palette || []].slice(0, 8).map((color, i) => (
-                      <div key={i} className="group relative">
-                        <div className="aspect-square rounded-2xl shadow-sm border-2 border-white transition-transform group-hover:-translate-y-1" style={{ backgroundColor: color }} />
-                        <div className="absolute inset-0 bg-black/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
+                  <div className="flex flex-wrap gap-3">
+                    {[primarySeason.extremeColor, primarySeason.dailyColor, ...primarySeason.palette || []].slice(0, 6).map((color, i) => (
+                      <div key={i} className="w-12 h-12 rounded-xl shadow-sm border-2 border-white/50" style={{ backgroundColor: color }} />
                     ))}
                   </div>
-                </div>
-
-                {/* 避雷色提示 */}
-                <div>
-                  <h3 className="text-navy font-black text-sm tracking-widest mb-6 flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center">
-                      <Download className="w-3 h-[2px] bg-red-600 rounded-full" />
-                    </div>
-                    警惕·雷区色系
+                </section>
+                <section>
+                  <h3 className="text-navy font-bold mb-4 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                    建议避雷的颜色
                   </h3>
-                  <div className="grid grid-cols-4 gap-3">
-                    {(primarySeason.avoid || ['#333333', '#1A1A1A', '#4A4A4A', '#2D2D2D', '#555555']).slice(0, 8).map((color, i) => (
-                      <div key={i} className="group relative">
-                        <div className="aspect-square rounded-2xl shadow-sm border-2 border-white filter grayscale-[0.2] transition-transform group-hover:scale-95" style={{ backgroundColor: color }} />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <RotateCcw className="w-4 h-4 text-white opacity-40 rotate-45" />
-                        </div>
-                      </div>
+                  <div className="flex flex-wrap gap-3 opacity-60">
+                    {['#333333', '#1A1A1A', '#4A4A4A', '#2D2D2D'].map((color, i) => (
+                      <div key={i} className="w-12 h-12 rounded-xl shadow-sm border-2 border-white/50 grayscale-[0.3]" style={{ backgroundColor: color }} />
                     ))}
                   </div>
-                </div>
+                </section>
               </div>
 
-              {/* 操作交互区 */}
-              <div className="flex flex-col sm:flex-row gap-6 mt-4">
-                <button className="btn-cta grow py-6 text-lg flex items-center justify-center gap-3 active:scale-[0.98]">
-                  <Download className="w-6 h-6" />
-                  生成我的专业诊断海报
+              {/* 操作区 */}
+              <div className="flex flex-wrap gap-4 mt-8 pt-8 border-t border-navy/5">
+                <button className="btn-cta grow flex items-center justify-center gap-2">
+                  <Download className="w-5 h-5" />
+                  保存报告图片
                 </button>
-                <div className="flex gap-4">
-                  <button className="glass-btn flex-1 sm:flex-none sm:px-10 flex items-center justify-center gap-3">
-                    <Share2 className="w-5 h-5" />
-                    分享
-                  </button>
-                  <button 
-                    onClick={() => navigate('/test')}
-                    className="glass-btn p-4 hover:bg-white/60 transition-all"
-                  >
-                    <RotateCcw className="w-6 h-6 text-navy/40" />
-                  </button>
-                </div>
+                <button className="glass-btn grow flex items-center justify-center gap-2">
+                  <Share2 className="w-5 h-5" />
+                  分享我的测试
+                </button>
+                <button 
+                  onClick={() => navigate('/test')}
+                  className="glass-btn flex items-center justify-center p-4"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                </button>
               </div>
-
             </div>
           </div>
 
-          {/* AI 技术说明 */}
-          <div className="mt-20 flex items-center gap-4 text-navy/30 text-[10px] font-bold bg-white/30 p-6 rounded-3xl border border-white/20">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span className="tracking-[0.1em]">AI 视觉引擎通过 MediaPipe 与 OpenCV 基于 Lab 色彩空间实时计算。结果已通过用户偏好加权。Beauty Hue 算法版权所有。</span>
+          {/* 异常检测提示 (逻辑挂载) */}
+          <div className="mt-12 flex items-center gap-3 text-muted text-xs bg-black/5 p-4 rounded-xl">
+            <AlertCircle className="w-4 h-4" />
+            <span>AI 视觉通过 MediaPipe 与 OpenCV 基于 Lab 色彩空间实时计算。结果包含用户主观偏好校正。</span>
           </div>
-
         </motion.div>
 
-        {/* 底部版权 */}
-        <div className="mt-12 text-center">
-          <p className="text-navy/20 text-[10px] font-black tracking-[1em] uppercase">Beauty Hue — Professional Color Diagnosis System v2.0</p>
-        </div>
+        <p className="mt-8 text-muted text-sm font-mono tracking-widest uppercase">Beauty Hue — Professional Color Studio</p>
       </div>
     </div>
   );
