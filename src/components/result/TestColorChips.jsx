@@ -23,31 +23,23 @@ export default function TestColorChips({
   rounds,
   selectedRound,
   onSelect,
-  activeSeasonKey,
   showHint,
 }) {
   const containerRef = useRef(null);
   const chipRefs = useRef({});
 
-  // 自动滚动到选中色卡（只在容器内滚动）
   useEffect(() => {
     if (selectedRound === null || !chipRefs.current[selectedRound] || !containerRef.current) return;
 
     const container = containerRef.current;
     const chip = chipRefs.current[selectedRound];
-
-    if (!chip) return;
-
     const containerRect = container.getBoundingClientRect();
     const chipRect = chip.getBoundingClientRect();
-
     const scrollLeft = container.scrollLeft;
     const chipLeft = chipRect.left - containerRect.left + scrollLeft;
     const chipWidth = chipRect.width;
     const containerWidth = containerRect.width;
-
-    // 计算目标滚动位置（居中）
-    const targetScroll = chipLeft - (containerWidth / 2) + (chipWidth / 2);
+    const targetScroll = chipLeft - containerWidth / 2 + chipWidth / 2;
 
     container.scrollTo({
       left: Math.max(0, targetScroll),
@@ -57,7 +49,6 @@ export default function TestColorChips({
 
   return (
     <div className="relative">
-      {/* 提示动画 */}
       <AnimatePresence>
         {showHint && (
           <motion.div
@@ -75,7 +66,6 @@ export default function TestColorChips({
         )}
       </AnimatePresence>
 
-      {/* 色卡横滑区 */}
       <div
         ref={containerRef}
         className="overflow-x-auto overflow-y-hidden pb-2 pt-2 -mx-2 px-2"
@@ -108,7 +98,6 @@ export default function TestColorChips({
                   backdropFilter: 'blur(12px)',
                 }}
               >
-                {/* 颜色色块 */}
                 <div
                   className="w-full rounded-t-2xl shrink-0"
                   style={{
@@ -117,11 +106,8 @@ export default function TestColorChips({
                   }}
                 />
 
-                {/* 内容 */}
                 <div className="p-1.5 text-center">
-                  <span className="text-[10px] text-muted font-mono">
-                    #{index + 1}
-                  </span>
+                  <span className="text-[10px] text-muted font-mono">#{index + 1}</span>
 
                   {selected && (
                     <motion.div
@@ -130,15 +116,9 @@ export default function TestColorChips({
                       transition={{ duration: 0.2 }}
                       className="mt-0.5"
                     >
-                      <p className="text-xs font-semibold text-navy truncate px-0.5">
-                        {round.colorName}
-                      </p>
-                      <p className="text-[10px] text-muted truncate px-0.5">
-                        {round.seasonNameCN}季型
-                      </p>
-                      <p className={`text-[10px] font-medium mt-0.5 ${scoreColorClass}`}>
-                        {scoreLabel}
-                      </p>
+                      <p className="text-xs font-semibold text-navy truncate px-0.5">{round.colorName}</p>
+                      <p className="text-[10px] text-muted truncate px-0.5">{round.seasonNameCN}季型</p>
+                      <p className={`text-[10px] font-medium mt-0.5 ${scoreColorClass}`}>{scoreLabel}</p>
                     </motion.div>
                   )}
                 </div>

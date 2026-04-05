@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 
-// 五维维度中文名称
 const LABELS = ['肤色提升', '冷暖匹配', '五官清晰', '对比和谐', '气质匹配'];
 const KEYS = ['skinLift', 'warmth', 'clarity', 'harmony', 'vibe'];
 
@@ -16,7 +15,6 @@ export default function ScoreRadar({
   const radius = size * 0.38;
   const levels = 5;
 
-  // 计算五边形顶点坐标
   const getPoint = (index, value) => {
     const angle = (Math.PI * 2 * index) / KEYS.length - Math.PI / 2;
     const scaledRadius = (value / 10) * radius;
@@ -27,7 +25,6 @@ export default function ScoreRadar({
     };
   };
 
-  // 获取标签位置
   const getLabelPosition = (index) => {
     const angle = (Math.PI * 2 * index) / KEYS.length - Math.PI / 2;
     const labelRadius = radius + (showLegend ? 32 : 22);
@@ -38,7 +35,6 @@ export default function ScoreRadar({
     };
   };
 
-  // 生成层级网格路径
   const gridPaths = Array.from({ length: levels }, (_, level) => {
     const currentRadius = ((level + 1) / levels) * radius;
     const points = KEYS.map((_, index) => {
@@ -49,11 +45,9 @@ export default function ScoreRadar({
     return `M ${points.join(' L ')} Z`;
   });
 
-  // 主数据路径
   const mainPoints = KEYS.map((key, index) => getPoint(index, dimensions?.[key] ?? 5));
   const mainPath = `M ${mainPoints.map((point) => `${point.x},${point.y}`).join(' L ')} Z`;
 
-  // 对比数据路径（如果有）
   const comparePath = comparison
     ? `M ${KEYS.map((key, index) => {
         const point = getPoint(index, comparison?.[key] ?? 5);
@@ -64,12 +58,10 @@ export default function ScoreRadar({
   return (
     <div className="flex flex-col items-center gap-4">
       <svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`} className="overflow-visible">
-        {/* 层级网格 */}
-        {gridPaths.map((path, index) => (
+        {gridPaths.map((path) => (
           <path key={path} d={path} fill="none" stroke="rgba(22,38,96,0.1)" strokeWidth="1" />
         ))}
 
-        {/* 轴线 */}
         {KEYS.map((_, index) => {
           const angle = (Math.PI * 2 * index) / KEYS.length - Math.PI / 2;
           const lineX = center + radius * Math.cos(angle);
@@ -88,7 +80,6 @@ export default function ScoreRadar({
           );
         })}
 
-        {/* 对比数据（虚线） */}
         {comparePath && (
           <motion.path
             initial={{ opacity: 0, scale: 0.92 }}
@@ -103,7 +94,6 @@ export default function ScoreRadar({
           />
         )}
 
-        {/* 主数据区域 */}
         <motion.path
           initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -115,7 +105,6 @@ export default function ScoreRadar({
           style={{ transformOrigin: `${center}px ${center}px` }}
         />
 
-        {/* 数据点 */}
         {KEYS.map((key, index) => {
           const point = getPoint(index, dimensions?.[key] ?? 5);
 
@@ -135,7 +124,6 @@ export default function ScoreRadar({
           );
         })}
 
-        {/* 标签 */}
         {LABELS.map((label, index) => {
           const labelPosition = getLabelPosition(index);
 
@@ -156,7 +144,6 @@ export default function ScoreRadar({
         })}
       </svg>
 
-      {/* 分数指示器 */}
       {showLegend && (
         <div className="grid w-full max-w-[320px] grid-cols-2 gap-x-4 gap-y-2">
           {KEYS.map((key, index) => {

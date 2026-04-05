@@ -1,8 +1,3 @@
-/**
- * 12 季型严格色彩规则（V2版本）
- * 每个季型必须严格使用标准测试色（Extreme & Daily）
- */
-
 export const SEASONS = {
   brightSpring: {
     name: 'Bright Spring',
@@ -11,7 +6,7 @@ export const SEASONS = {
     dailyColor: '#00F0F9',
     palette: ['#FF3A3A', '#00F0F9', '#FFD166', '#FF8C61', '#4DFFEB', '#FF4D6A'],
     avoid: ['#5C5C5C', '#3D3D3D', '#2B2B3D'],
-    description: '明亮、清澈、高饱和的暖色调最适合你。你的特征是肤色明亮、对比度高，鲜艳的活泼色彩能瞬间提亮眼神。',
+    description: '明亮、清澈、偏暖且高饱和的颜色最能衬托你，让整个人看起来更有活力和光泽。',
   },
   warmSpring: {
     name: 'Warm Spring',
@@ -20,7 +15,7 @@ export const SEASONS = {
     dailyColor: '#F0B266',
     palette: ['#FF5533', '#F0B266', '#FF9F43', '#78E08F', '#F5CD79', '#E77F67'],
     avoid: ['#2B4C7E', '#4A69BD', '#0C2461'],
-    description: '温暖、生动、舒适的暖色最适合你。你的肤色带有明显的金色底色，暖橙色系与草绿色系能让你看起来充满生机。',
+    description: '温暖、鲜活、自然舒展的暖色系很适合你，能把肤色里的暖调表现得更柔和通透。',
   },
   lightSpring: {
     name: 'Light Spring',
@@ -29,7 +24,7 @@ export const SEASONS = {
     dailyColor: '#F7EE77',
     palette: ['#FF99CC', '#F7EE77', '#FFEAA7', '#A8E6CF', '#B8D8D8', '#FFB8B8'],
     avoid: ['#1A1A2E', '#2B2B3D', '#0D0D0D'],
-    description: '轻柔、明亮、低对比度的暖色最适合你。你的肤色透明度高，浅黄与浅粉等春日色彩能衬托出你的灵动与清纯感。',
+    description: '轻盈、柔亮、低对比的春日色系会让你看起来更清透，适合温柔又灵动的氛围。',
   },
   lightSummer: {
     name: 'Light Summer',
@@ -38,7 +33,7 @@ export const SEASONS = {
     dailyColor: '#F2C2CC',
     palette: ['#AAD4F2', '#F2C2CC', '#D5E1EB', '#C4B7CB', '#E8D5E0', '#B8D4E3'],
     avoid: ['#FF6B35', '#FFAA00', '#CC5555'],
-    description: '柔和、浅淡、偏冷的低饱和色最适合你。你的气质轻盈且干净，如夏日破晓时的冷调色系最能体现你的高级感。',
+    description: '柔和、轻浅、偏冷的夏日色调最适合你，会让整体气质更干净、更高级。',
   },
   coolSummer: {
     name: 'Cool Summer',
@@ -47,7 +42,7 @@ export const SEASONS = {
     dailyColor: '#E6B2CC',
     palette: ['#0088DD', '#E6B2CC', '#7B9EB8', '#A3B1C6', '#8E7CC3', '#A89BBF'],
     avoid: ['#E8A87C', '#FFB347', '#D2691E'],
-    description: '冷调、优雅、中等饱和度的色系最适合你。蓝粉色调与你的冷皮相得益彰，散发着沉稳且富有女性魅力的知性气息。',
+    description: '冷调、优雅、中等饱和度的颜色会让你更显精致，蓝粉系尤其容易衬托气质。',
   },
   softSummer: {
     name: 'Soft Summer',
@@ -56,7 +51,7 @@ export const SEASONS = {
     dailyColor: '#BB88AA',
     palette: ['#8888CC', '#BB88AA', '#8E9AAF', '#B5B8B1', '#C4BAA2', '#B0A8B9'],
     avoid: ['#E91E63', '#FF3A3A', '#00FFFF'],
-    description: '灰调、朦胧、低饱和的中性冷色最适合你。你的美感在于一种“虚实之间”的朦胧，莫兰迪色系能极致升华你的质感。',
+    description: '朦胧、灰柔、低饱和的冷调颜色更适合你，能把气质里的温柔感放大。',
   },
   softAutumn: {
     name: 'Soft Autumn',
@@ -65,7 +60,7 @@ export const SEASONS = {
     dailyColor: '#AA8866',
     palette: ['#EE8877', '#AA8866', '#A69076', '#C4A882', '#B8A088', '#9B8B78'],
     avoid: ['#0000FF', '#3F51B5', '#9C27B0'],
-    description: '柔和、混浊、自然的大地温暖色最适合你。这种低调的暖意能让你原本肤色中的暗沉转化为高级的哑光质感。',
+    description: '柔雾感、自然感、偏暖的大地色与你很协调，会让肤色显得更柔和、更稳定。',
   },
   warmAutumn: {
     name: 'Warm Autumn',
@@ -74,7 +69,7 @@ export const SEASONS = {
     dailyColor: '#E2AA7F',
     palette: ['#FFAA00', '#E2AA7F', '#CB6D38', '#D4843E', '#CD853F', '#B8860B'],
     avoid: ['#D0E6FD', '#AFC1D6', '#B8D4E3'],
-    description: '成熟、浓郁、金秋般的暖色最适合你。你天生具有丰富的暖意，暖棕、焦糖色与高明度的黄色能让你气场全开。',
+    description: '浓郁、成熟、有金色感的秋色很衬你，能让人看起来更有温度和层次。',
   },
   deepAutumn: {
     name: 'Deep Autumn',
@@ -83,7 +78,7 @@ export const SEASONS = {
     dailyColor: '#88553F',
     palette: ['#CC5555', '#88553F', '#6B3A2A', '#5C3317', '#704214', '#3C1414'],
     avoid: ['#FFEAA7', '#F7EE77', '#A8E6CF'],
-    description: '厚重、深邃、浓烈的深暖色最适合你。你的肤色明度较低但饱和度足，这种带有重量感的色彩能衬托出你的神秘与高级感。',
+    description: '厚重、深沉、暖而浓的颜色最能体现你的存在感，适合更稳重的高级氛围。',
   },
   deepWinter: {
     name: 'Deep Winter',
@@ -92,7 +87,7 @@ export const SEASONS = {
     dailyColor: '#1064EC',
     palette: ['#FF0000', '#1064EC', '#1A1A2E', '#16213E', '#1B1464', '#3D0C11'],
     avoid: ['#F0B266', '#F5CD79', '#E8A87C'],
-    description: '极深、冰冷、极具戏剧性的深冷色最适合你。你的五官极具存在感，深沉饱满的冷色能瞬间聚焦你的个人魅力。',
+    description: '深冷、锐利、戏剧感强的颜色最适合你，能让五官显得更有力量和对比。',
   },
   coolWinter: {
     name: 'Cool Winter',
@@ -101,7 +96,7 @@ export const SEASONS = {
     dailyColor: '#EE33A3',
     palette: ['#0000FF', '#EE33A3', '#2B4C7E', '#4A69BD', '#3B3B98', '#1A3C6E'],
     avoid: ['#CB6D38', '#A69076', '#CB6D38'],
-    description: '冷酷、坚硬、清澈的纯冷色最适合你。作为冬日的冷美人，除了这片冰冷的蓝色与鲜艳的粉紫色，没有更适合你的了。',
+    description: '清冷、纯净、对比鲜明的冷色调更容易衬出你的高级感，适合冷艳明快的路线。',
   },
   brightWinter: {
     name: 'Bright Winter',
@@ -110,7 +105,7 @@ export const SEASONS = {
     dailyColor: '#FF3399',
     palette: ['#00FFFF', '#FF3399', '#E91E63', '#9C27B0', '#2196F3', '#FF1744'],
     avoid: ['#A69076', '#D4843E', '#8B4513'],
-    description: '鲜艳、夺目、最高对比度的纯净色最适合你。你是那种在黑白大反差背景下最能闪耀的人，高对比是你的美貌核心。',
+    description: '鲜明、干净、极高对比的亮色更适合你，能快速提亮整体气场和精致度。',
   },
 };
 

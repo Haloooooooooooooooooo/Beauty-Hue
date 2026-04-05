@@ -107,9 +107,7 @@ export default function TestPage() {
   };
 
   const handleSubmit = () => {
-    if (!canSubmit) {
-      return;
-    }
+    if (!canSubmit) return;
 
     localStorage.setItem('beautyHue_scores', JSON.stringify(scores));
     localStorage.setItem('beautyHue_systemHistory', JSON.stringify(systemHistory));

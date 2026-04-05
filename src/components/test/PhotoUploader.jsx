@@ -123,7 +123,7 @@ export default function PhotoUploader({ onStart }) {
             <img
               ref={imageRef}
               src={image}
-              alt="User upload"
+              alt="用户上传照片"
               draggable="false"
               className="absolute top-1/2 left-1/2 max-w-none pointer-events-none"
               style={{
