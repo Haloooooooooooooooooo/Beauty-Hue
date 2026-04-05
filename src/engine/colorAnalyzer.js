@@ -98,35 +98,69 @@ export async function analyzeImageMetrics(imageBase64, bgHex) {
 
 /**
  * 最终计算全季型排名
+ * @param {Array} historicalData - [{ seasonKey, systemScore, dimensions, phase }]
+ * @param {Object} userScores - { seasonKey: sum_of_user_scores }
+ * @returns {Array} 排序后的结果 [{ key, score, dimensions }]
  */
 export function calculateFinalResults(historicalData, userScores) {
-  // historicalData: [{ seasonKey, systemScore, phase }]
+  // historicalData: [{ seasonKey, systemScore, dimensions: {...}, phase }]
   // userScores: { seasonKey: sum_of_user_scores }
-  
+
   const results = {};
-  
+  const dimensionAccumulators = {}; // 累积五维分数
+
+  historicalData.forEach(d => {
+    const key = d.seasonKey;
+    if (!dimensionAccumulators[key]) {
+      dimensionAccumulators[key] = {
+        skinLift: 0, warmth: 0, clarity: 0, harmony: 0, vibe: 0, count: 0
+      };
+    }
+    if (d.dimensions) {
+      dimensionAccumulators[key].skinLift += d.dimensions.skinLift || 0;
+      dimensionAccumulators[key].warmth += d.dimensions.warmth || 0;
+      dimensionAccumulators[key].clarity += d.dimensions.clarity || 0;
+      dimensionAccumulators[key].harmony += d.dimensions.harmony || 0;
+      dimensionAccumulators[key].vibe += d.dimensions.vibe || 0;
+      dimensionAccumulators[key].count += 1;
+    }
+  });
+
   Object.keys(userScores).forEach(key => {
-    const roundsOfThisSeason = historicalData.filter(d => d.key === key);
+    const roundsOfThisSeason = historicalData.filter(d => d.seasonKey === key);
     if (roundsOfThisSeason.length === 0) return;
-    
+
     // 取系统平均分
-    const avgSystem = roundsOfThisSeason.reduce((acc, curr) => acc + curr.score, 0) / roundsOfThisSeason.length;
-    // 取用户平均分 (userScores 是累加值)
+    const avgSystem = roundsOfThisSeason.reduce((acc, curr) => acc + curr.systemScore, 0) / roundsOfThisSeason.length;
+    // 取用户平均分 (userScores 是累加值，映射到 0-10)
     const count = roundsOfThisSeason.length;
-    const avgUser = (userScores[key] / count); // 映射回 0~10
-    
+    const avgUser = (userScores[key] / count) / 10; // 归一化到 0-10
+
     // 加权：(system × 0.65) + (user × 0.35)
     let final = (avgSystem * 0.65) + (avgUser * 0.35);
-    
+
     // 如果是第二阶段，权重提升 1.2x
     if (roundsOfThisSeason.some(r => r.phase === 2)) {
       final *= 1.2;
     }
-    
-    results[key] = final;
+
+    // 计算五维平均分
+    const acc = dimensionAccumulators[key];
+    const avgDimensions = acc && acc.count > 0 ? {
+      skinLift: acc.skinLift / acc.count,
+      warmth: acc.warmth / acc.count,
+      clarity: acc.clarity / acc.count,
+      harmony: acc.harmony / acc.count,
+      vibe: acc.vibe / acc.count,
+    } : null;
+
+    results[key] = {
+      score: final,
+      dimensions: avgDimensions,
+    };
   });
 
   return Object.entries(results)
-    .sort(([, a], [, b]) => b - a)
-    .map(([key, score]) => ({ key, score }));
+    .sort(([, a], [, b]) => b.score - a.score)
+    .map(([key, data]) => ({ key, score: data.score, dimensions: data.dimensions }));
 }
