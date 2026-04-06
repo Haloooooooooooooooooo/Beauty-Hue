@@ -37,7 +37,7 @@ export default function ControlPanel({
           className="w-14 h-14 rounded-full mb-3 shadow-[0_4px_12px_rgba(0,0,0,0.1)] border-2 border-white"
           style={{ backgroundColor: currentColor?.color || '#000' }}
         />
-        <span className="text-2xl font-bold text-navy tracking-wide">{currentColor?.nameCN || '...'}</span>
+        <span className="text-2xl font-bold text-navy tracking-wide">{currentColor?.colorName || '...'}</span>
         <span className="text-sm text-navy/60 font-mono mt-1 font-medium tracking-widest">
           {currentColor?.color || '#...'}
         </span>

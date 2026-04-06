@@ -100,6 +100,24 @@ function getUserScoreLabel(score) {
   return '不适合';
 }
 
+function getUserScoreTagClass(score) {
+  if (score >= 10) return 'bg-green-100 text-green-700';
+  if (score >= 5) return 'bg-gray-100 text-gray-600';
+  return 'bg-orange-100 text-orange-600';
+}
+
+function getAiScoreTagClass(score) {
+  if (score >= 7) return 'bg-green-100 text-green-700';
+  if (score >= 5) return 'bg-gray-100 text-gray-600';
+  return 'bg-orange-100 text-orange-600';
+}
+
+function getRoundFinalScore(round) {
+  const normalizedUserScore = (round.userScore || 0) / 10;
+  const normalizedAiScore = round.systemScore || 0;
+  return normalizedUserScore * 0.4 + normalizedAiScore * 0.6;
+}
+
 function getPreferredRoundIndex(history, seasonKey) {
   const matchingRounds = history
     .map((entry, index) => ({ entry, index }))
@@ -160,10 +178,13 @@ export default function ResultPage() {
   }));
 
   const selectedColorRound = selectedRound !== null ? displayRounds[selectedRound] : null;
+  const rankedRounds = [...displayRounds].sort((a, b) => getRoundFinalScore(b) - getRoundFinalScore(a));
+  const bestColorRounds = rankedRounds.slice(0, 6);
+  const avoidColorRounds = [...rankedRounds].reverse().slice(0, 6);
 
   return (
     <div className="bg-kraft min-h-screen pb-10">
-      <div className="max-w-[1000px] mx-auto px-4 py-6">
+      <div className="max-w-[1240px] mx-auto px-5 py-6 md:px-6">
         <Navbar />
 
         <motion.div
@@ -176,16 +197,16 @@ export default function ResultPage() {
             style={{ backgroundColor: activeSeason.extremeColor }}
           />
 
-          <div className="relative p-5 md:p-8">
-            <div className="text-center mb-6 pb-6 border-b border-navy/5">
-              <div className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-white/80 shadow-lg mx-auto mb-4">
+          <div className="relative p-6 md:p-10">
+            <div className="text-center mb-8 pb-8 border-b border-navy/5">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white/80 shadow-lg mx-auto mb-5">
                 <img src={image} alt="测试结果头像" className="w-full h-full object-cover" />
               </div>
 
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
                 <div>
                   <span className="text-xs text-muted tracking-widest">主季型</span>
-                  <h1 className="text-2xl md:text-3xl font-bold text-navy flex items-center justify-center gap-2">
+                  <h1 className="text-3xl md:text-4xl font-bold text-navy flex items-center justify-center gap-2">
                     {primarySeason.nameCN}
                     <Sparkles className="w-5 h-5 text-amber-500" />
                   </h1>
@@ -212,13 +233,13 @@ export default function ResultPage() {
 
             <section className="mb-6">
               <h2 className="text-xs font-bold text-navy/40 tracking-widest mb-2">色彩特征解析</h2>
-              <div className="bg-white/30 rounded-xl p-4 border border-white/40">
-                <p className="text-sm text-text leading-relaxed italic">"{activeSeason.description}"</p>
+              <div className="bg-white/30 rounded-2xl p-5 md:p-6 border border-white/40">
+                <p className="text-base text-text leading-relaxed italic">"{activeSeason.description}"</p>
               </div>
             </section>
 
             <AnimatePresence mode="wait">
-              {!hasSelectedChip && activeDimensions && (
+              {activeDimensions && (
                 <motion.section
                   key={seasonType}
                   initial={{ opacity: 0 }}
@@ -229,12 +250,12 @@ export default function ResultPage() {
                   <h2 className="text-xs font-bold text-navy/40 tracking-widest mb-2">
                     {seasonType === 'primary' ? '主季型综合分析' : '次季型综合分析'}
                   </h2>
-                  <div className="bg-white/30 rounded-xl p-4 border border-white/40">
-                    <div className="flex flex-col md:flex-row gap-4 items-center md:items-start">
+                  <div className="bg-white/30 rounded-2xl p-5 md:p-6 border border-white/40">
+                    <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
                       <div className="shrink-0">
-                        <ScoreRadar dimensions={activeDimensions} size={160} />
+                        <ScoreRadar dimensions={activeDimensions} size={200} />
                       </div>
-                      <div className="flex-1 space-y-2 w-full">
+                      <div className="flex-1 space-y-5 w-full">
                         {Object.entries(activeDimensions).map(([key, value], index) => {
                           const config = DIMENSION_CONFIG[key];
                           const Icon = config?.icon;
@@ -247,24 +268,24 @@ export default function ResultPage() {
                               initial={{ opacity: 0, x: 10 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: index * 0.05 }}
-                              className="flex gap-2 items-start"
+                              className="flex gap-4 items-start"
                             >
-                              <div className="w-7 h-7 rounded bg-white/60 flex items-center justify-center shrink-0">
-                                <Icon className="w-3.5 h-3.5 text-navy" />
+                              <div className="w-10 h-10 rounded-xl bg-white/60 flex items-center justify-center shrink-0">
+                                <Icon className="w-5 h-5 text-navy" />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between text-xs mb-0.5">
+                              <div className="flex-1 min-w-0 pt-0.5">
+                                <div className="flex justify-between text-sm mb-1.5">
                                   <span className="font-medium">{name}</span>
-                                  <span className="font-bold text-navy">{value.toFixed(1)}</span>
+                                  <span className="font-bold text-navy text-[15px]">{value.toFixed(1)}</span>
                                 </div>
-                                <div className="h-1 bg-black/5 rounded-full overflow-hidden">
+                                <div className="h-1.5 bg-black/5 rounded-full overflow-hidden">
                                   <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${(value / 10) * 100}%` }}
                                     className="h-full bg-navy rounded-full"
                                   />
                                 </div>
-                                <p className="text-[10px] text-muted mt-0.5">{insight}</p>
+                                <p className="text-sm text-muted mt-2 leading-relaxed">{insight}</p>
                               </div>
                             </motion.div>
                           );
@@ -277,12 +298,23 @@ export default function ResultPage() {
             </AnimatePresence>
 
             <section className="mb-6">
-              <h2 className="text-xs font-bold text-navy/40 tracking-widest mb-2">测试色卡详情</h2>
-              <div className="bg-white/20 rounded-xl p-3 border border-white/40">
+              <div className="mb-2 flex items-center gap-3">
+                <h2 className="text-xs font-bold text-navy/40 tracking-widest">测试色卡详情</h2>
+                {!hasSelectedChip && (
+                  <motion.span
+                    animate={{ y: [0, -4, 0], scale: [1, 1.02, 1] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                    className="rounded-full border border-sky/60 bg-white/85 px-3 py-1 text-[11px] font-medium text-navy shadow-[0_0_18px_rgba(208,230,253,0.45)]"
+                  >
+                    {'\u70b9\u51fb\u8272\u5361\u67e5\u770b\u8be6\u7ec6\u5206\u6790'}
+                  </motion.span>
+                )}
+              </div>
+              <div className="bg-white/20 rounded-2xl p-4 md:p-5 border border-white/40">
                 <TestColorChips
                   rounds={displayRounds}
                   selectedRound={selectedRound}
-                  showHint={!hasSelectedChip}
+                  showHint={false}
                   onSelect={(index) => {
                     setSelectedRound(index);
                     setHasSelectedChip(true);
@@ -296,46 +328,54 @@ export default function ResultPage() {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      className="mt-4 pt-4 border-t border-white/30"
+                      className="mt-5 pt-5 border-t border-white/30"
                     >
                       <h3 className="text-xs font-medium text-navy/60 mb-3">
                         第 {selectedColorRound.roundNumber} 轮 · {selectedColorRound.colorName}
                       </h3>
 
-                      <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex flex-col sm:flex-row gap-6">
                         <div className="flex justify-center sm:justify-start shrink-0">
-                          <ScoreRadar dimensions={selectedColorRound.dimensions} size={140} showLegend={false} />
+                          <ScoreRadar dimensions={selectedColorRound.dimensions} size={180} showLegend={false} />
                         </div>
 
                         <div className="flex-1 min-w-0 space-y-3">
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-start gap-3">
                             <div
                               className="w-10 h-10 rounded-lg border border-white/80 shrink-0"
                               style={{ backgroundColor: selectedColorRound.color }}
                             />
-                            <span className="text-sm font-semibold text-navy">{selectedColorRound.seasonNameCN}季型</span>
-                            <span className="text-xs font-mono bg-white/60 px-2 py-0.5 rounded">{selectedColorRound.color}</span>
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded font-medium ${
-                                selectedColorRound.userScore >= 10
-                                  ? 'bg-green-100 text-green-700'
-                                  : selectedColorRound.userScore >= 5
-                                    ? 'bg-gray-100 text-gray-600'
-                                    : 'bg-orange-100 text-orange-600'
-                              }`}
-                            >
-                              {getUserScoreLabel(selectedColorRound.userScore)}
-                            </span>
+                            <div className="min-w-0 space-y-1">
+                              <div className="text-sm font-semibold text-navy">{selectedColorRound.colorName}</div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs text-muted">{`${selectedColorRound.seasonNameCN}\u5b63\u578b`}</span>
+                                <span className="text-xs font-mono bg-white/60 px-2 py-0.5 rounded">{selectedColorRound.color}</span>
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded font-medium ${getAiScoreTagClass(
+                                    selectedColorRound.systemScore
+                                  )}`}
+                                >
+                                  {`AI\u8bc4\u5206\uff1a${selectedColorRound.systemScore.toFixed(1)}`}
+                                </span>
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded font-medium ${getUserScoreTagClass(
+                                    selectedColorRound.userScore
+                                  )}`}
+                                >
+                                  {`\u7528\u6237\u8bc4\u5206\uff1a${getUserScoreLabel(selectedColorRound.userScore)}`}
+                                </span>
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-3">
                             {Object.entries(selectedColorRound.dimensions || {}).map(([key, value]) => {
                               const config = DIMENSION_CONFIG[key];
                               const Icon = config?.icon;
                               const name = config?.name || key;
 
                               return (
-                                <div key={key} className="bg-white/40 rounded-lg p-2 border border-white/30">
+                                <div key={key} className="bg-white/40 rounded-xl p-3 border border-white/30">
                                   <div className="flex justify-between items-center text-xs mb-1">
                                     <div className="flex items-center gap-1">
                                       <Icon className="w-3 h-3 text-navy" />
@@ -355,7 +395,7 @@ export default function ResultPage() {
                             })}
                           </div>
 
-                          <div className="bg-white/30 rounded-lg p-3 border border-white/30">
+                          <div className="bg-white/30 rounded-xl p-4 border border-white/30">
                             <p className="text-xs font-semibold text-navy mb-1">总体评价</p>
                             <p className="text-xs text-text leading-relaxed">{getColorEvaluation(selectedColorRound)}</p>
                           </div>
@@ -367,7 +407,82 @@ export default function ResultPage() {
               </div>
             </section>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 gap-5 mb-6 md:grid-cols-2">
+              <section>
+                <div className="mb-1 flex items-center gap-3">
+                  <h3 className="text-xs font-bold text-navy flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    {'\u672c\u547d\u8272\u5361'}
+                  </h3>
+                  {!hasSelectedChip && (
+                    <span className="rounded-full border border-sky/60 bg-white/85 px-3 py-1 text-[11px] font-medium text-navy shadow-[0_0_18px_rgba(208,230,253,0.45)]">
+                      {'\u70b9\u51fb\u8272\u5361\u67e5\u770b\u5177\u4f53\u5206\u6790'}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted mb-3">{'\u7efc\u5408\u5f97\u5206\u6700\u9ad8\uff0c\u6700\u9002\u5408\u9760\u8fd1\u9762\u90e8\u4f7f\u7528'}</p>
+                <div className="flex flex-wrap gap-3">
+                  {bestColorRounds.map((round, index) => (
+                    <div key={`best-${round.roundNumber}-${index}`} className="relative group">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedRound(displayRounds.findIndex((entry) => entry.roundNumber === round.roundNumber));
+                          setHasSelectedChip(true);
+                        }}
+                        className="relative h-12 w-12 overflow-hidden rounded-xl border border-white/60 shadow-sm transition-transform duration-200 hover:-translate-y-1"
+                        style={{ backgroundColor: round.color }}
+                        aria-label={`${round.colorName} ${round.color}`}
+                      >
+                        <div className="pointer-events-none absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-1 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                          <div className="text-[10px] font-medium text-[#e5e7eb] leading-tight">{round.colorName}</div>
+                          <div className="text-[9px] font-mono text-[#d1d5db] leading-tight">{round.color}</div>
+                        </div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <section>
+                <div className="mb-1 flex items-center gap-3">
+                  <h3 className="text-xs font-bold text-navy flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    {'\u907f\u96f7\u8272\u5361'}
+                  </h3>
+                  {!hasSelectedChip && (
+                    <span className="rounded-full border border-sky/60 bg-white/85 px-3 py-1 text-[11px] font-medium text-navy shadow-[0_0_18px_rgba(208,230,253,0.45)]">
+                      {'\u70b9\u51fb\u8272\u5361\u67e5\u770b\u5177\u4f53\u5206\u6790'}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted mb-3">{'\u7efc\u5408\u5f97\u5206\u6700\u4f4e\uff0c\u5efa\u8bae\u51cf\u5c11\u9760\u8fd1\u9762\u90e8\u4f7f\u7528'}</p>
+                <div className="flex flex-wrap gap-3">
+                  {avoidColorRounds.map((round, index) => (
+                    <div key={`avoid-${round.roundNumber}-${index}`} className="relative group">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedRound(displayRounds.findIndex((entry) => entry.roundNumber === round.roundNumber));
+                          setHasSelectedChip(true);
+                        }}
+                        className="relative h-12 w-12 overflow-hidden rounded-xl border border-white/60 shadow-sm transition-transform duration-200 hover:-translate-y-1"
+                        style={{ backgroundColor: round.color }}
+                        aria-label={`${round.colorName} ${round.color}`}
+                      >
+                        <div className="pointer-events-none absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-1 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                          <div className="text-[10px] font-medium text-[#e5e7eb] leading-tight">{round.colorName}</div>
+                          <div className="text-[9px] font-mono text-[#d1d5db] leading-tight">{round.color}</div>
+                        </div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <div className="hidden grid-cols-2 gap-4 mb-6">
               <div>
                 <h3 className="text-xs font-bold text-navy mb-2 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500" />

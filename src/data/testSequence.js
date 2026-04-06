@@ -6,7 +6,7 @@ const COLOR_NAMES = {
   brightSpring_extreme: '亮红',
   warmSpring_extreme: '艳橙',
   lightSpring_extreme: '亮粉',
-  lightSummer_extreme: '浅蓝青',
+  lightSummer_extreme: '浅蓝',
   coolSummer_extreme: '亮蓝',
   softSummer_extreme: '灰紫',
   softAutumn_extreme: '橙红',
