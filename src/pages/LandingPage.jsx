@@ -2,11 +2,11 @@ import Navbar from '../components/layout/Navbar';
 import HeroSection from '../components/landing/HeroSection';
 import CardCarousel from '../components/landing/CardCarousel';
 
-export default function LandingPage() {
+export default function LandingPage({ onOpenLogin }) {
   return (
     <div className="bg-kraft min-h-screen flex flex-col items-center">
       <div className="w-full max-w-[1600px] h-screen flex flex-col relative overflow-hidden">
-        <Navbar />
+        <Navbar onOpenLogin={onOpenLogin} />
         
         <div className="flex-1 flex flex-row items-center w-full">
           {/* Left part: text area */}

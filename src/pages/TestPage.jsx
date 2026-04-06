@@ -23,7 +23,7 @@ function buildPhase1CompositeScores(history) {
   }, {});
 }
 
-export default function TestPage() {
+export default function TestPage({ onOpenLogin }) {
   const navigate = useNavigate();
   const frameRef = useRef(null);
 
@@ -142,7 +142,7 @@ export default function TestPage() {
   return (
     <div className="bg-kraft min-h-screen flex flex-col items-center relative overflow-hidden">
       <div className="w-full max-w-[1700px] h-screen flex flex-col relative">
-        <Navbar />
+        <Navbar onOpenLogin={onOpenLogin} />
 
         <AnimatePresence>
           {flash && (

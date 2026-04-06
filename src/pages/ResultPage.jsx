@@ -11,6 +11,7 @@ import {
   Sparkles,
   Sun,
   Waves,
+  X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/layout/Navbar';
@@ -18,6 +19,7 @@ import { SEASONS } from '../data/seasonColors';
 import { calculateFinalResults } from '../engine/colorAnalyzer';
 import ScoreRadar from '../components/result/ScoreRadar';
 import TestColorChips from '../components/result/TestColorChips';
+import { useAuth } from '../context/AuthContext';
 
 const DIMENSION_CONFIG = {
   skinLift: {
@@ -131,14 +133,16 @@ function getPreferredRoundIndex(history, seasonKey) {
   })[0].index;
 }
 
-export default function ResultPage() {
+export default function ResultPage({ onOpenLogin }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [results, setResults] = useState(null);
   const [image, setImage] = useState(null);
   const [systemHistory, setSystemHistory] = useState([]);
   const [seasonType, setSeasonType] = useState('primary');
   const [selectedRound, setSelectedRound] = useState(null);
   const [hasSelectedChip, setHasSelectedChip] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   useEffect(() => {
     const userScores = JSON.parse(localStorage.getItem('beautyHue_scores') || '{}');
@@ -185,7 +189,7 @@ export default function ResultPage() {
   return (
     <div className="bg-kraft min-h-screen pb-10">
       <div className="max-w-[1240px] mx-auto px-5 py-6 md:px-6">
-        <Navbar />
+        <Navbar onOpenLogin={onOpenLogin} />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -512,7 +516,10 @@ export default function ResultPage() {
             </div>
 
             <div className="flex gap-2 flex-wrap pt-4 border-t border-navy/5">
-              <button className="btn-cta flex-1 flex items-center justify-center gap-2 text-sm py-3">
+              <button
+                onClick={() => setShowSaveModal(true)}
+                className="btn-cta flex-1 flex items-center justify-center gap-2 text-sm py-3"
+              >
                 <Download className="w-4 h-4" />
                 保存报告
               </button>
@@ -524,6 +531,79 @@ export default function ResultPage() {
                 <RotateCcw className="w-4 h-4" />
               </button>
             </div>
+
+            {/* 保存报告弹窗 */}
+            <AnimatePresence>
+              {showSaveModal && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowSaveModal(false)}
+                    className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[360px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 overflow-hidden"
+                  >
+                    <div className="p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-navy">保存报告</h3>
+                        <button
+                          onClick={() => setShowSaveModal(false)}
+                          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors"
+                        >
+                          <X className="w-4 h-4 text-muted" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => {
+                            // TODO: 实现下载功能
+                            setShowSaveModal(false);
+                          }}
+                          className="w-full flex items-center gap-3 p-4 rounded-xl bg-kraft/30 hover:bg-kraft/50 transition-colors border border-white/60"
+                        >
+                          <Download className="w-5 h-5 text-navy" />
+                          <div className="text-left">
+                            <div className="text-sm font-medium text-navy">下载到本地</div>
+                            <div className="text-xs text-muted">保存为图片到设备</div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setShowSaveModal(false);
+                            if (!user) {
+                              onOpenLogin?.();
+                            } else {
+                              // TODO: 已登录时保存到云端
+                            }
+                          }}
+                          className="w-full flex items-center gap-3 p-4 rounded-xl bg-navy/5 hover:bg-navy/10 transition-colors border border-navy/20"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-navy/10 flex items-center justify-center">
+                            <Sparkles className="w-5 h-5 text-navy" />
+                          </div>
+                          <div className="text-left">
+                            <div className="text-sm font-medium text-navy">
+                              {user ? '保存到云端' : '登录保存'}
+                            </div>
+                            <div className="text-xs text-muted">
+                              {user ? '同步到账户，多设备查看' : '登录后可同步历史报告'}
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
 
             <div className="mt-4 flex items-start gap-2 text-[10px] text-muted bg-black/5 rounded-lg p-2">
               <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
