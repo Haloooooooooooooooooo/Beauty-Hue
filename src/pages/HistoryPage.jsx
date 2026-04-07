@@ -1,8 +1,3 @@
-/**
- * 历史报告页面
- * 展示用户保存的全部色彩诊断报告
- */
-
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -31,9 +26,9 @@ export default function HistoryPage({ onOpenLogin }) {
 
       const result = await getUserReports(user.email);
       if (result.success) {
-        setReports(result.reports);
+        setReports(result.reports || []);
       } else {
-        setError(result.error);
+        setError(result.error || '加载历史报告失败');
       }
       setLoading(false);
     }
@@ -51,9 +46,10 @@ export default function HistoryPage({ onOpenLogin }) {
     if (result.success) {
       setReports((currentReports) => currentReports.filter((report) => report.id !== reportId));
       setDeleteConfirm(null);
-    } else {
-      setError(result.error);
+      return;
     }
+
+    setError(result.error || '删除报告失败');
   };
 
   if (!initialized) {

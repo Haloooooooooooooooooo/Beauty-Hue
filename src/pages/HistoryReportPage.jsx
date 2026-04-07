@@ -1,8 +1,3 @@
-/**
- * 历史报告详情页面
- * 从数据库加载报告，支持刷新和直接访问
- */
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,7 +14,7 @@ const DIMENSION_CONFIG = {
     name: '肤色提亮',
     icon: Sun,
     insights: {
-      high: '这个颜色能明显提亮肤色，让气色看起来更通透。',
+      high: '这个颜色能明显提亮肤色，让整体状态更透亮。',
       mid: '这个颜色与肤色融合自然，整体表现比较稳定。',
       low: '这个颜色可能会让肤色显得发灰或暗沉，建议谨慎使用。',
     },
@@ -69,7 +64,7 @@ function getDimensionInsight(value, key) {
 }
 
 function getColorEvaluation(roundData) {
-  if (!roundData?.dimensions) return '暂无该颜色的详细分析数据。';
+  if (!roundData?.dimensions) return '暂时没有该颜色的详细分析数据。';
 
   const entries = Object.entries(roundData.dimensions);
   const sorted = [...entries].sort(([, a], [, b]) => b - a);
@@ -124,32 +119,29 @@ export default function HistoryReportPage({ onOpenLogin }) {
 
   useEffect(() => {
     async function loadReport() {
-      // 先尝试从 URL 参数获取 reportId
       const reportId = searchParams.get('id');
 
       if (reportId) {
-        // 从数据库加载
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('user_reports')
           .select('*')
           .eq('id', reportId)
           .single();
 
-        if (error) {
+        if (fetchError) {
           setError('报告不存在或已删除');
         } else {
           setReport(data);
         }
       } else {
-        // 从 localStorage 加载（兼容旧流程）
         const reportData = localStorage.getItem('beautyHue_historyReport');
         if (reportData) {
           setReport(JSON.parse(reportData));
-          // 不删除，保留以便刷新
         } else {
           setError('报告不存在');
         }
       }
+
       setLoading(false);
     }
 
@@ -185,7 +177,7 @@ export default function HistoryReportPage({ onOpenLogin }) {
       <div className="bg-kraft min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted mb-4">{error || '报告不存在'}</p>
-          <button onClick={() => navigate(-1)} className="btn-cta">
+          <button onClick={() => navigate('/history')} className="btn-cta">
             返回历史
           </button>
         </div>
@@ -217,14 +209,13 @@ export default function HistoryReportPage({ onOpenLogin }) {
       <div className="max-w-[1240px] mx-auto px-5 py-6 md:px-6">
         <Navbar onOpenLogin={onOpenLogin} />
 
-        {/* 返回按钮 */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative z-20 mb-4"
         >
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/history')}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 text-sm text-navy border border-white/30 hover:bg-white/60 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -232,7 +223,6 @@ export default function HistoryReportPage({ onOpenLogin }) {
           </button>
         </motion.div>
 
-        {/* 历史报告提示 */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -256,7 +246,6 @@ export default function HistoryReportPage({ onOpenLogin }) {
           )}
 
           <div className="relative p-6 md:p-10">
-            {/* 标题区 */}
             <div className="text-center mb-8 pb-8 border-b border-navy/5">
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
                 <div>
@@ -279,7 +268,6 @@ export default function HistoryReportPage({ onOpenLogin }) {
               </div>
             </div>
 
-            {/* 色彩特征 */}
             {primarySeason && (
               <section className="mb-6">
                 <h2 className="text-xs font-bold text-navy/40 tracking-widest mb-2">色彩特征解析</h2>
@@ -289,7 +277,6 @@ export default function HistoryReportPage({ onOpenLogin }) {
               </section>
             )}
 
-            {/* 五维分析 */}
             {primaryDimensions && (
               <section className="mb-6">
                 <h2 className="text-xs font-bold text-navy/40 tracking-widest mb-2">主季型综合分析</h2>
@@ -339,7 +326,6 @@ export default function HistoryReportPage({ onOpenLogin }) {
               </section>
             )}
 
-            {/* 测试色卡详情 */}
             {history.length > 0 && (
               <section className="mb-6">
                 <div className="mb-2 flex items-center gap-3">
@@ -452,7 +438,6 @@ export default function HistoryReportPage({ onOpenLogin }) {
               </section>
             )}
 
-            {/* 本命色卡 + 避雷色卡 */}
             <div className="grid grid-cols-1 gap-5 mb-6 md:grid-cols-2">
               <section>
                 <div className="mb-1 flex items-center gap-3">
@@ -475,7 +460,7 @@ export default function HistoryReportPage({ onOpenLogin }) {
                       style={{ backgroundColor: round.color }}
                       aria-label={`${round.colorName} ${round.color}`}
                     >
-                      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-1 text-center opacity-0 hover:opacity-100 bg-black/10 hover:opacity-100">
+                      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-1 text-center opacity-0 hover:opacity-100 bg-black/10">
                         <div className="text-[10px] font-medium text-[#e5e7eb] leading-tight">{round.colorName}</div>
                       </div>
                     </button>
@@ -504,7 +489,7 @@ export default function HistoryReportPage({ onOpenLogin }) {
                       style={{ backgroundColor: round.color }}
                       aria-label={`${round.colorName} ${round.color}`}
                     >
-                      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-1 text-center opacity-0 hover:opacity-100 bg-black/10 hover:opacity-100">
+                      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-1 text-center opacity-0 hover:opacity-100 bg-black/10">
                         <div className="text-[10px] font-medium text-[#e5e7eb] leading-tight">{round.colorName}</div>
                       </div>
                     </button>
@@ -513,7 +498,6 @@ export default function HistoryReportPage({ onOpenLogin }) {
               </section>
             </div>
 
-            {/* 操作按钮 */}
             <div className="flex gap-2 flex-wrap pt-4 border-t border-navy/5">
               <button
                 onClick={handleSaveImage}
@@ -527,7 +511,6 @@ export default function HistoryReportPage({ onOpenLogin }) {
               </button>
             </div>
 
-            {/* 提示 */}
             <div className="mt-4 flex items-start gap-2 text-[10px] text-muted bg-black/5 rounded-lg p-2">
               <span>AI 分析基于 Canvas 像素采样结果，并结合用户的主观评分进行综合判断。</span>
             </div>
