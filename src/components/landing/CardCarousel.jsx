@@ -7,102 +7,127 @@ import { SEASONS, SEASON_KEYS } from '../../data/seasonColors';
 function CarouselCard({ season, index, x, cardWidth, containerWidth, totalCards }) {
   const cardCenter = index * cardWidth + cardWidth / 2;
 
-  // 计算卡片位置状态
-  // status: 'exiting' | 'visible-left' | 'visible-right' | 'entering'
-  const getPosition = (latestX) => {
+  // 计算卡片位置
+  const getCardState = (latestX) => {
     const cardPos = cardCenter + latestX;
     const containerCenter = containerWidth / 2;
 
-    // 主显示区域的左边界和右边界
-    const leftEdge = containerCenter - cardWidth;
-    const rightEdge = containerCenter + cardWidth;
+    // 主显示区域：屏幕中心左右各一张卡片
+    // 卡片2在左边，卡片3在右边
+    const mainLeft = containerCenter - cardWidth;      // 卡片2的中心位置
+    const mainRight = containerCenter + cardWidth;     // 卡片3的中心位置
 
-    if (cardPos < leftEdge - cardWidth * 0.5) {
-      return { status: 'exiting', progress: Math.min(1, (leftEdge - cardWidth * 0.5 - cardPos) / (cardWidth * 0.8)) };
+    // 淡出区域：比主显示区域更左边
+    const exitStart = mainLeft - cardWidth * 0.8;      // 开始淡出的位置
+    const exitEnd = mainLeft - cardWidth * 2;          // 完全消失的位置
+
+    // 淡入区域：比主显示区域更右边
+    const enterStart = mainRight + cardWidth * 0.5;    // 开始淡入的位置
+    const enterEnd = mainRight + cardWidth * 1.5;      // 完全清晰的位置
+
+    if (cardPos < exitEnd) {
+      // 完全消失
+      return { state: 'gone', progress: 1 };
     }
-    if (cardPos < leftEdge) {
-      return { status: 'visible-left', progress: 0 };
+    if (cardPos < exitStart) {
+      // 正在淡出（缓慢）
+      const progress = (exitStart - cardPos) / (exitStart - exitEnd);
+      return { state: 'exiting', progress };
     }
-    if (cardPos < rightEdge) {
-      return { status: 'visible-right', progress: 0 };
+    if (cardPos < containerCenter) {
+      // 主显示左边卡片（卡片2）
+      return { state: 'main-left', progress: 0 };
     }
-    if (cardPos < rightEdge + cardWidth * 0.8) {
-      return { status: 'entering', progress: (cardPos - rightEdge) / (cardWidth * 0.8) };
+    if (cardPos < mainRight + cardWidth * 0.3) {
+      // 主显示右边卡片（卡片3）
+      return { state: 'main-right', progress: 0 };
     }
-    return { status: 'hidden', progress: 1 };
+    if (cardPos < enterEnd) {
+      // 正在淡入
+      const progress = (enterEnd - cardPos) / (enterEnd - enterStart);
+      return { state: 'entering', progress };
+    }
+    // 还在右边等待
+    return { state: 'waiting', progress: 1 };
   };
 
-  // opacity - 淡入淡出
+  // opacity
   const opacity = useTransform(x, (latestX) => {
-    const { status, progress } = getPosition(latestX);
+    const { state, progress } = getCardState(latestX);
 
-    if (status === 'exiting') {
-      // 左边淡出
-      return Math.max(0, 1 - progress);
+    switch (state) {
+      case 'gone':
+        return 0;
+      case 'exiting':
+        // 缓慢淡出：从1到0.1
+        return Math.max(0.1, 1 - progress * 0.9);
+      case 'main-left':
+      case 'main-right':
+        return 1;
+      case 'entering':
+        // 进入即淡入：从0.4到1
+        return 0.4 + (1 - progress) * 0.6;
+      case 'waiting':
+        return 0.3;
+      default:
+        return 1;
     }
-    if (status === 'entering') {
-      // 右边淡入
-      return Math.max(0.1, 1 - progress);
-    }
-    if (status === 'visible-left' || status === 'visible-right') {
-      // 主显示区域清晰
-      return 1;
-    }
-    return 0;
   });
 
-  // y 偏移 - 左上后方和右下前方
+  // y 偏移
   const y = useTransform(x, (latestX) => {
-    const { status, progress } = getPosition(latestX);
+    const { state, progress } = getCardState(latestX);
 
-    if (status === 'exiting') {
+    if (state === 'exiting') {
       // 左上后方：向上移动
-      return -progress * 80;
-    }
-    if (status === 'entering') {
-      // 右下前方：向下移动
-      return progress * 80;
-    }
-    return 0;
-  });
-
-  // x 偏移 - 模拟"后方"的深度感
-  const xOffset = useTransform(x, (latestX) => {
-    const { status, progress } = getPosition(latestX);
-
-    if (status === 'exiting') {
-      // 左边额外向左偏移
       return -progress * 60;
     }
-    if (status === 'entering') {
-      // 右边额外向右偏移
-      return progress * 60;
+    if (state === 'entering' || state === 'waiting') {
+      // 右下前方：向下移动
+      return 40;
+    }
+    return 0;
+  });
+
+  // x 偏移 - 向右移动，叠到下一张卡片后面被遮挡
+  const xOffset = useTransform(x, (latestX) => {
+    const { state, progress } = getCardState(latestX);
+
+    if (state === 'exiting') {
+      // 向右移动，与下一张卡片重叠，被下一张卡片遮挡
+      // 使用卡片视觉宽度340的一半，产生50%折叠效果
+      return progress * 170;
     }
     return 0;
   });
 
   // zIndex
   const zIndex = useTransform(x, (latestX) => {
-    const { status } = getPosition(latestX);
-    if (status === 'visible-left') return 12;
-    if (status === 'visible-right') return 11;
-    if (status === 'exiting') return 5;
-    if (status === 'entering') return 5;
-    return 1;
+    const { state } = getCardState(latestX);
+    switch (state) {
+      case 'main-left':
+        return 12;
+      case 'main-right':
+        return 11;
+      case 'exiting':
+        return 5;
+      case 'entering':
+        return 6;
+      default:
+        return 1;
+    }
   });
 
   // 悬浮放大
   const [isHovered, setIsHovered] = useState(false);
-  const { status } = getPosition(x.get());
-  const canHover = status === 'visible-left' || status === 'visible-right';
+  const { state: cardState } = getCardState(x.get());
+  const canHover = cardState === 'main-left' || cardState === 'main-right';
   const hoverScale = isHovered && canHover ? 1.03 : 1;
 
   return (
     <motion.div
       className="flex-shrink-0"
-      style={{
-        scale: hoverScale,
-      }}
+      style={{ scale: hoverScale }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -130,9 +155,8 @@ export default function CardCarousel() {
 
   const seasonsList = SEASON_KEYS.map(key => SEASONS[key]);
   const totalCards = seasonsList.length;
-  const cardWidth = 360; // 卡片宽度340 + 间距20
+  const cardWidth = 360;
 
-  // 创建3组卡片实现无缝循环
   const extendedList = useMemo(() => {
     const list = [];
     for (let i = 0; i < 3; i++) {
@@ -143,24 +167,19 @@ export default function CardCarousel() {
     return list;
   }, [seasonsList]);
 
-  // 位置状态
   const x = useMotionValue(-cardWidth * totalCards);
 
-  // 测量容器宽度
   useEffect(() => {
     if (containerRef.current) {
       setContainerWidth(containerRef.current.offsetWidth);
     }
     const handleResize = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
-      }
+      if (containerRef.current) setContainerWidth(containerRef.current.offsetWidth);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 自动轮播
   useEffect(() => {
     let lastTime = null;
     const speed = 80;
@@ -189,11 +208,8 @@ export default function CardCarousel() {
     };
 
     animationRef.current = requestAnimationFrame(animate);
-
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, [totalCards, x]);
 
@@ -203,7 +219,6 @@ export default function CardCarousel() {
 
   const handleDragEnd = () => {
     isDraggingRef.current = false;
-
     const currentX = x.get();
     const totalWidth = cardWidth * totalCards;
 
@@ -245,9 +260,9 @@ export default function CardCarousel() {
       </motion.div>
 
       {/* 左边渐变遮罩 */}
-      <div className="absolute left-0 top-0 bottom-0 w-[15%] bg-gradient-to-r from-kraft via-kraft/60 to-transparent pointer-events-none z-30" />
+      <div className="absolute left-0 top-0 bottom-0 w-[12%] bg-gradient-to-r from-kraft via-kraft/50 to-transparent pointer-events-none z-30" />
       {/* 右边渐变遮罩 */}
-      <div className="absolute right-0 top-0 bottom-0 w-[15%] bg-gradient-to-l from-kraft via-kraft/60 to-transparent pointer-events-none z-30" />
+      <div className="absolute right-0 top-0 bottom-0 w-[12%] bg-gradient-to-l from-kraft via-kraft/50 to-transparent pointer-events-none z-30" />
     </div>
   );
 }
