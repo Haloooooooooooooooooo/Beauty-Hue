@@ -59,16 +59,16 @@ function CarouselCard({ season, index, x, cardWidth, containerWidth, totalCards 
       case 'gone':
         return 0;
       case 'exiting':
-        // 缓慢淡出：从1到0.1
-        return Math.max(0.1, 1 - progress * 0.9);
+        // 缓慢淡出：从1到0.5（不要太暗）
+        return Math.max(0.5, 1 - progress * 0.5);
       case 'main-left':
       case 'main-right':
         return 1;
       case 'entering':
-        // 进入即淡入：从0.4到1
-        return 0.4 + (1 - progress) * 0.6;
+        // 进入即淡入：从0.7到1
+        return 0.7 + (1 - progress) * 0.3;
       case 'waiting':
-        return 0.3;
+        return 0.7;
       default:
         return 1;
     }
