@@ -13,7 +13,8 @@ export default function ControlPanel({
     <div className="flex flex-col gap-4 items-center h-full justify-center w-full max-w-[200px]">
       <div className="mb-6 w-full group relative">
         <button
-          onClick={canSubmit ? onSubmit : null}
+          onClick={canSubmit ? () => onSubmit() : undefined}
+          type="button"
           className={`w-full py-4 rounded-button font-medium transition-all duration-300
             ${
               canSubmit

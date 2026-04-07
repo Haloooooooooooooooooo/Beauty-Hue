@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
@@ -7,11 +7,9 @@ import {
   Heart,
   Palette,
   RotateCcw,
-  Share2,
   Sparkles,
   Sun,
   Waves,
-  X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/layout/Navbar';
@@ -19,24 +17,27 @@ import { SEASONS } from '../data/seasonColors';
 import { calculateFinalResults } from '../engine/colorAnalyzer';
 import ScoreRadar from '../components/result/ScoreRadar';
 import TestColorChips from '../components/result/TestColorChips';
-import { useAuth } from '../context/AuthContext';
+import ShareButton from '../components/result/ShareButton';
+import SaveReportButton from '../components/result/SaveReportButton';
+import { AuthContext } from '../context/AuthContext';
+import { saveUserReport } from '../utils/userReportService';
 
 const DIMENSION_CONFIG = {
   skinLift: {
-    name: '肤色提升',
+    name: '肤色提亮',
     icon: Sun,
     insights: {
-      high: '这个颜色能明显提亮肤色，让气色看起来更红润。',
-      mid: '这个颜色与肤色融合自然，整体效果比较稳定。',
-      low: '这个颜色可能会让肤色略显暗沉，需要谨慎使用。',
+      high: '这个颜色能明显提亮肤色，让气色看起来更通透。',
+      mid: '这个颜色与肤色融合自然，整体表现比较稳定。',
+      low: '这个颜色可能会让肤色显得发灰或暗沉，建议谨慎使用。',
     },
   },
   warmth: {
     name: '冷暖匹配',
     icon: Palette,
     insights: {
-      high: '冷暖调性贴合度很高，看起来会更自然。',
-      mid: '冷暖匹配中等，适合搭配妆容或配饰调整。',
+      high: '冷暖调性贴合度很高，看起来会更自然协调。',
+      mid: '冷暖匹配中等，适合通过妆容或配饰微调。',
       low: '冷暖方向偏差较大，容易显得不够和谐。',
     },
   },
@@ -53,7 +54,7 @@ const DIMENSION_CONFIG = {
     name: '对比和谐',
     icon: Waves,
     insights: {
-      high: '整体对比和谐度很好，气质会更统一。',
+      high: '整体对比和谐度很高，气质会更统一。',
       mid: '整体和谐度尚可，搭配时有一定灵活度。',
       low: '这个颜色的对比关系偏弱，容易影响整体协调感。',
     },
@@ -62,9 +63,9 @@ const DIMENSION_CONFIG = {
     name: '气质匹配',
     icon: Heart,
     insights: {
-      high: '这个颜色与你的整体气质很贴合，很容易出效果。',
-      mid: '气质匹配平稳，属于安全但不惊艳的选择。',
-      low: '气质方向不够一致，容易显得有点违和。',
+      high: '这个颜色和你的整体气质很贴合，容易出效果。',
+      mid: '气质匹配平稳，属于安全但不算惊艳的选择。',
+      low: '气质方向不太一致，容易有违和感。',
     },
   },
 };
@@ -86,7 +87,7 @@ function getColorEvaluation(roundData) {
   const lowestName = DIMENSION_CONFIG[lowestKey]?.name || lowestKey;
 
   if (bestValue >= 7.5) {
-    return `该颜色对你的适配度很高，${bestName}维度尤其突出，整体表现干净利落。`;
+    return `这个颜色对你的适配度很高，${bestName}维度尤其突出，整体表现干净利落。`;
   }
 
   if (lowestValue <= 4.5) {
@@ -135,19 +136,21 @@ function getPreferredRoundIndex(history, seasonKey) {
 
 export default function ResultPage({ onOpenLogin }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useContext(AuthContext);
   const [results, setResults] = useState(null);
   const [image, setImage] = useState(null);
   const [systemHistory, setSystemHistory] = useState([]);
+  const [screenshots, setScreenshots] = useState([]);
   const [seasonType, setSeasonType] = useState('primary');
   const [selectedRound, setSelectedRound] = useState(null);
   const [hasSelectedChip, setHasSelectedChip] = useState(false);
-  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [reportSaved, setReportSaved] = useState(false);
 
   useEffect(() => {
     const userScores = JSON.parse(localStorage.getItem('beautyHue_scores') || '{}');
     const history = JSON.parse(localStorage.getItem('beautyHue_systemHistory') || '[]');
     const userImage = localStorage.getItem('beautyHue_image');
+    const storedScreenshots = JSON.parse(localStorage.getItem('beautyHue_screenshots') || '[]');
 
     if (!userImage || Object.keys(userScores).length === 0 || history.length === 0) {
       navigate('/test');
@@ -156,8 +159,29 @@ export default function ResultPage({ onOpenLogin }) {
 
     setImage(userImage);
     setSystemHistory(history);
-    setResults(calculateFinalResults(history, userScores));
-  }, [navigate]);
+    setScreenshots(Array.isArray(storedScreenshots) ? storedScreenshots : []);
+    const calculatedResults = calculateFinalResults(history, userScores);
+    setResults(calculatedResults);
+
+    // 自动保存登录用户的报告
+    if (user && calculatedResults && history.length > 0) {
+      const savedKey = `beautyHue_reportSaved_${Date.now().toString().slice(0, -5)}`;
+      const alreadySaved = localStorage.getItem('beautyHue_currentReportSaved');
+
+      if (!alreadySaved) {
+        saveUserReport({
+          userId: user.email,
+          results: calculatedResults,
+          history: history,
+        }).then((result) => {
+          if (result.success) {
+            setReportSaved(true);
+            localStorage.setItem('beautyHue_currentReportSaved', 'true');
+          }
+        });
+      }
+    }
+  }, [navigate, user]);
 
   const primaryResult = results?.[0];
   const secondaryResult = results?.[1];
@@ -167,13 +191,6 @@ export default function ResultPage({ onOpenLogin }) {
   const activeSeason = activeResult ? SEASONS[activeResult.key] : primarySeason;
   const activeSeasonKey = activeResult?.key;
   const activeDimensions = activeResult?.dimensions;
-
-  useEffect(() => {
-    if (!results?.length || !systemHistory.length || !activeSeasonKey) return;
-    setSelectedRound(getPreferredRoundIndex(systemHistory, activeSeasonKey));
-  }, [results, systemHistory, activeSeasonKey]);
-
-  if (!results || !primarySeason || !activeResult) return null;
 
   const displayRounds = systemHistory.map((entry, index) => ({
     ...entry,
@@ -185,6 +202,22 @@ export default function ResultPage({ onOpenLogin }) {
   const rankedRounds = [...displayRounds].sort((a, b) => getRoundFinalScore(b) - getRoundFinalScore(a));
   const bestColorRounds = rankedRounds.slice(0, 6);
   const avoidColorRounds = [...rankedRounds].reverse().slice(0, 6);
+
+  useEffect(() => {
+    if (!results?.length || !systemHistory.length || !activeSeasonKey) return;
+    setSelectedRound(getPreferredRoundIndex(systemHistory, activeSeasonKey));
+  }, [results, systemHistory, activeSeasonKey]);
+
+  if (!results || !primarySeason || !activeResult) return null;
+
+  const handleDownloadScreenshot = (screenshot, index) => {
+    if (!screenshot?.image) return;
+
+    const link = document.createElement('a');
+    link.href = screenshot.image;
+    link.download = `beauty-hue-frame-${index + 1}.png`;
+    link.click();
+  };
 
   return (
     <div className="bg-kraft min-h-screen pb-10">
@@ -310,7 +343,7 @@ export default function ResultPage({ onOpenLogin }) {
                     transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
                     className="rounded-full border border-sky/60 bg-white/85 px-3 py-1 text-[11px] font-medium text-navy shadow-[0_0_18px_rgba(208,230,253,0.45)]"
                   >
-                    {'\u70b9\u51fb\u8272\u5361\u67e5\u770b\u8be6\u7ec6\u5206\u6790'}
+                    点击色卡查看详细分析
                   </motion.span>
                 )}
               </div>
@@ -352,21 +385,21 @@ export default function ResultPage({ onOpenLogin }) {
                             <div className="min-w-0 space-y-1">
                               <div className="text-sm font-semibold text-navy">{selectedColorRound.colorName}</div>
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs text-muted">{`${selectedColorRound.seasonNameCN}\u5b63\u578b`}</span>
+                                <span className="text-xs text-muted">{`${selectedColorRound.seasonNameCN}季型`}</span>
                                 <span className="text-xs font-mono bg-white/60 px-2 py-0.5 rounded">{selectedColorRound.color}</span>
                                 <span
                                   className={`text-xs px-2 py-0.5 rounded font-medium ${getAiScoreTagClass(
                                     selectedColorRound.systemScore
                                   )}`}
                                 >
-                                  {`AI\u8bc4\u5206\uff1a${selectedColorRound.systemScore.toFixed(1)}`}
+                                  {`AI评分：${selectedColorRound.systemScore.toFixed(1)}`}
                                 </span>
                                 <span
                                   className={`text-xs px-2 py-0.5 rounded font-medium ${getUserScoreTagClass(
                                     selectedColorRound.userScore
                                   )}`}
                                 >
-                                  {`\u7528\u6237\u8bc4\u5206\uff1a${getUserScoreLabel(selectedColorRound.userScore)}`}
+                                  {`用户评分：${getUserScoreLabel(selectedColorRound.userScore)}`}
                                 </span>
                               </div>
                             </div>
@@ -416,15 +449,15 @@ export default function ResultPage({ onOpenLogin }) {
                 <div className="mb-1 flex items-center gap-3">
                   <h3 className="text-xs font-bold text-navy flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    {'\u672c\u547d\u8272\u5361'}
+                    本命色卡
                   </h3>
                   {!hasSelectedChip && (
                     <span className="rounded-full border border-sky/60 bg-white/85 px-3 py-1 text-[11px] font-medium text-navy shadow-[0_0_18px_rgba(208,230,253,0.45)]">
-                      {'\u70b9\u51fb\u8272\u5361\u67e5\u770b\u5177\u4f53\u5206\u6790'}
+                      点击色卡查看具体分析
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-muted mb-3">{'\u7efc\u5408\u5f97\u5206\u6700\u9ad8\uff0c\u6700\u9002\u5408\u9760\u8fd1\u9762\u90e8\u4f7f\u7528'}</p>
+                <p className="text-[11px] text-muted mb-3">综合得分最高，最适合靠近面部使用</p>
                 <div className="flex flex-wrap gap-3">
                   {bestColorRounds.map((round, index) => (
                     <div key={`best-${round.roundNumber}-${index}`} className="relative group">
@@ -448,19 +481,20 @@ export default function ResultPage({ onOpenLogin }) {
                   ))}
                 </div>
               </section>
+
               <section>
                 <div className="mb-1 flex items-center gap-3">
                   <h3 className="text-xs font-bold text-navy flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                    {'\u907f\u96f7\u8272\u5361'}
+                    避雷色卡
                   </h3>
                   {!hasSelectedChip && (
                     <span className="rounded-full border border-sky/60 bg-white/85 px-3 py-1 text-[11px] font-medium text-navy shadow-[0_0_18px_rgba(208,230,253,0.45)]">
-                      {'\u70b9\u51fb\u8272\u5361\u67e5\u770b\u5177\u4f53\u5206\u6790'}
+                      点击色卡查看具体分析
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-muted mb-3">{'\u7efc\u5408\u5f97\u5206\u6700\u4f4e\uff0c\u5efa\u8bae\u51cf\u5c11\u9760\u8fd1\u9762\u90e8\u4f7f\u7528'}</p>
+                <p className="text-[11px] text-muted mb-3">综合得分最低，建议减少靠近面部使用</p>
                 <div className="flex flex-wrap gap-3">
                   {avoidColorRounds.map((round, index) => (
                     <div key={`avoid-${round.roundNumber}-${index}`} className="relative group">
@@ -485,6 +519,40 @@ export default function ResultPage({ onOpenLogin }) {
                 </div>
               </section>
             </div>
+
+            <section className="mb-6">
+              <div className="rounded-2xl border border-white/40 bg-white/20 p-4 md:p-5">
+                {screenshots.length ? (
+                  <div className="flex flex-wrap gap-3">
+                    {screenshots.slice(0, 6).map((screenshot, index) => (
+                      <div
+                        key={screenshot.id || `${screenshot.roundNumber}-${index}`}
+                        className="group relative w-[112px] shrink-0 overflow-hidden rounded-[18px] border border-white/50 bg-white/55 shadow-md sm:w-[124px]"
+                      >
+                        <img
+                          src={screenshot.image}
+                          alt={`测试相框截图 ${index + 1}`}
+                          className="aspect-[30/23] w-full object-contain bg-[#f7f2ea]"
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-black/8 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadScreenshot(screenshot, index)}
+                          className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-navy shadow-md opacity-0 transition-opacity duration-200 hover:bg-white group-hover:opacity-100"
+                          aria-label={`下载截图 ${index + 1}`}
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex min-h-[180px] items-center justify-center rounded-[24px] border border-dashed border-navy/15 bg-white/35 text-sm text-muted">
+                    本次测试还没有截图
+                  </div>
+                )}
+              </div>
+            </section>
 
             <div className="hidden grid-cols-2 gap-4 mb-6">
               <div>
@@ -516,94 +584,12 @@ export default function ResultPage({ onOpenLogin }) {
             </div>
 
             <div className="flex gap-2 flex-wrap pt-4 border-t border-navy/5">
-              <button
-                onClick={() => setShowSaveModal(true)}
-                className="btn-cta flex-1 flex items-center justify-center gap-2 text-sm py-3"
-              >
-                <Download className="w-4 h-4" />
-                保存报告
-              </button>
-              <button className="glass-btn flex-1 flex items-center justify-center gap-2 text-sm py-3">
-                <Share2 className="w-4 h-4" />
-                分享
-              </button>
+              <ShareButton results={results} systemHistory={systemHistory} />
+              <SaveReportButton results={results} image={image} systemHistory={systemHistory} />
               <button onClick={() => navigate('/test')} className="glass-btn py-3 px-4">
                 <RotateCcw className="w-4 h-4" />
               </button>
             </div>
-
-            {/* 保存报告弹窗 */}
-            <AnimatePresence>
-              {showSaveModal && (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setShowSaveModal(false)}
-                    className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm"
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[360px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 overflow-hidden"
-                  >
-                    <div className="p-6">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-navy">保存报告</h3>
-                        <button
-                          onClick={() => setShowSaveModal(false)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors"
-                        >
-                          <X className="w-4 h-4 text-muted" />
-                        </button>
-                      </div>
-
-                      <div className="space-y-3">
-                        <button
-                          onClick={() => {
-                            // TODO: 实现下载功能
-                            setShowSaveModal(false);
-                          }}
-                          className="w-full flex items-center gap-3 p-4 rounded-xl bg-kraft/30 hover:bg-kraft/50 transition-colors border border-white/60"
-                        >
-                          <Download className="w-5 h-5 text-navy" />
-                          <div className="text-left">
-                            <div className="text-sm font-medium text-navy">下载到本地</div>
-                            <div className="text-xs text-muted">保存为图片到设备</div>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setShowSaveModal(false);
-                            if (!user) {
-                              onOpenLogin?.();
-                            } else {
-                              // TODO: 已登录时保存到云端
-                            }
-                          }}
-                          className="w-full flex items-center gap-3 p-4 rounded-xl bg-navy/5 hover:bg-navy/10 transition-colors border border-navy/20"
-                        >
-                          <div className="w-10 h-10 rounded-full bg-navy/10 flex items-center justify-center">
-                            <Sparkles className="w-5 h-5 text-navy" />
-                          </div>
-                          <div className="text-left">
-                            <div className="text-sm font-medium text-navy">
-                              {user ? '保存到云端' : '登录保存'}
-                            </div>
-                            <div className="text-xs text-muted">
-                              {user ? '同步到账户，多设备查看' : '登录后可同步历史报告'}
-                            </div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
 
             <div className="mt-4 flex items-start gap-2 text-[10px] text-muted bg-black/5 rounded-lg p-2">
               <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />

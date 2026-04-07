@@ -21,8 +21,8 @@ export default function Navbar({ onOpenLogin }) {
 
   const initial = user?.email?.charAt(0).toUpperCase() || '';
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setShowDropdown(false);
   };
 
@@ -65,6 +65,7 @@ export default function Navbar({ onOpenLogin }) {
                 <button
                   onClick={() => {
                     setShowDropdown(false);
+                    navigate('/history');
                   }}
                   className="w-full px-4 py-2.5 text-left text-sm text-navy transition-colors hover:bg-kraft/30"
                 >

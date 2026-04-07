@@ -8,6 +8,7 @@ import PhotoFrame from '../components/test/PhotoFrame';
 import ControlPanel from '../components/test/ControlPanel';
 import { PHASE1_SEQUENCE, generatePhase2, MIN_ROUNDS, TOTAL_ROUNDS } from '../data/testSequence';
 import { analyzeImageMetrics } from '../engine/colorAnalyzer';
+import { createFrameSnapshot } from '../engine/frameSnapshot';
 
 const PHASE1_USER_WEIGHT = 0.55;
 const PHASE1_AI_WEIGHT = 0.45;
@@ -35,6 +36,7 @@ export default function TestPage({ onOpenLogin }) {
   const [scores, setScores] = useState({});
   const [systemHistory, setSystemHistory] = useState([]);
   const [roundScores, setRoundScores] = useState({});
+  const [screenshots, setScreenshots] = useState([]);
   const [flash, setFlash] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
@@ -43,6 +45,12 @@ export default function TestPage({ onOpenLogin }) {
   const canSubmit = (phase === 1 && round >= MIN_ROUNDS - 1) || phase === 2;
 
   const handleStart = (base64Img) => {
+    // 清除之前的测试数据和保存标志
+    localStorage.removeItem('beautyHue_currentReportSaved');
+    localStorage.removeItem('beautyHue_scores');
+    localStorage.removeItem('beautyHue_systemHistory');
+    localStorage.removeItem('beautyHue_screenshots');
+
     setImage(base64Img);
     setHasStarted(true);
   };
@@ -56,6 +64,7 @@ export default function TestPage({ onOpenLogin }) {
     setScores({});
     setSystemHistory([]);
     setRoundScores({});
+    setScreenshots([]);
   };
 
   const handleScore = async (val) => {
@@ -121,21 +130,61 @@ export default function TestPage({ onOpenLogin }) {
     }
   };
 
-  const handleScreenshot = () => {
-    setFlash(true);
-    setTimeout(() => {
-      setFlash(false);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    }, 200);
+  const handleScreenshot = async () => {
+    if (!image || !currentColor) return;
+
+    try {
+      const snapshot = await createFrameSnapshot({
+        imageSrc: image,
+        colorHex: currentColor.color,
+      });
+
+      setScreenshots((prev) => [
+        ...prev,
+        {
+          id: `${Date.now()}-${currentRoundKey}`,
+          image: snapshot,
+          color: currentColor.color,
+          colorName: currentColor.colorName,
+          phase,
+          roundNumber: currentRoundKey + 1,
+        },
+      ]);
+
+      setFlash(true);
+      setTimeout(() => {
+        setFlash(false);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }, 200);
+    } catch (error) {
+      console.error('Failed to create frame snapshot', error);
+    }
   };
 
   const handleSubmit = (scoresToSave = scores, historyToSave = systemHistory) => {
     if (!canSubmit) return;
 
-    localStorage.setItem('beautyHue_scores', JSON.stringify(scoresToSave));
-    localStorage.setItem('beautyHue_systemHistory', JSON.stringify(historyToSave));
+    const safeScores =
+      scoresToSave && typeof scoresToSave === 'object' && 'nativeEvent' in scoresToSave
+        ? scores
+        : scoresToSave;
+    const safeHistory =
+      historyToSave && typeof historyToSave === 'object' && 'nativeEvent' in historyToSave
+        ? systemHistory
+        : historyToSave;
+
+    localStorage.setItem('beautyHue_scores', JSON.stringify(safeScores));
+    localStorage.setItem('beautyHue_systemHistory', JSON.stringify(safeHistory));
     localStorage.setItem('beautyHue_image', image);
+
+    try {
+      localStorage.setItem('beautyHue_screenshots', JSON.stringify(screenshots));
+    } catch (error) {
+      console.error('Failed to persist screenshots', error);
+      localStorage.removeItem('beautyHue_screenshots');
+    }
+
     navigate('/result');
   };
 
@@ -167,7 +216,7 @@ export default function TestPage({ onOpenLogin }) {
               <div className="bg-green-500/20 p-1.5 rounded-full">
                 <CheckCircle2 className="w-5 h-5 text-green-600" />
               </div>
-              <span className="text-navy font-semibold tracking-wide">截图已保存到本地</span>
+              <span className="text-navy font-semibold tracking-wide">{'\u622a\u56fe\u5b8c\u6210'}</span>
             </motion.div>
           )}
         </AnimatePresence>

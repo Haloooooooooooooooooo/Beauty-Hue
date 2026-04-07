@@ -1,61 +1,67 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { getCurrentUser, logout as authLogout, onAuthStateChange } from '../utils/authService';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    // 从 localStorage 恢复登录状态
-    const savedUser = localStorage.getItem('beautyHue_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    let mounted = true;
+
+    async function hydrateCurrentUser() {
+      try {
+        const { user: currentUser } = await getCurrentUser();
+        if (!mounted) return;
+
+        setUser(currentUser || null);
+        if (currentUser) {
+          localStorage.setItem('beautyHue_user', JSON.stringify(currentUser));
+        } else {
+          localStorage.removeItem('beautyHue_user');
+        }
+      } catch (err) {
+        console.error('Auth init error:', err);
+      } finally {
+        if (mounted) {
+          setInitialized(true);
+          setLoading(false);
+        }
+      }
     }
-    setLoading(false);
+
+    const unsubscribe = onAuthStateChange(({ user: nextUser }) => {
+      if (!mounted) return;
+
+      setUser(nextUser);
+      if (nextUser) {
+        localStorage.setItem('beautyHue_user', JSON.stringify(nextUser));
+      } else {
+        localStorage.removeItem('beautyHue_user');
+      }
+
+      setInitialized(true);
+      setLoading(false);
+    });
+
+    hydrateCurrentUser();
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
-  const login = (email, password) => {
-    // 从 localStorage 获取已注册用户
-    const users = JSON.parse(localStorage.getItem('beautyHue_users') || '[]');
-    const found = users.find(u => u.email === email && u.password === password);
-
-    if (found) {
-      const userData = { email: found.email };
-      setUser(userData);
-      localStorage.setItem('beautyHue_user', JSON.stringify(userData));
-      return { success: true };
-    }
-    return { success: false, error: '邮箱或密码错误' };
-  };
-
-  const register = (email, password) => {
-    const users = JSON.parse(localStorage.getItem('beautyHue_users') || '[]');
-
-    // 检查邮箱是否已注册
-    if (users.find(u => u.email === email)) {
-      return { success: false, error: '该邮箱已被注册' };
-    }
-
-    // 添加新用户
-    users.push({ email, password });
-    localStorage.setItem('beautyHue_users', JSON.stringify(users));
-
-    // 自动登录
-    const userData = { email };
-    setUser(userData);
-    localStorage.setItem('beautyHue_user', JSON.stringify(userData));
-
-    return { success: true };
-  };
-
-  const logout = () => {
+  const logout = async () => {
+    await authLogout();
     setUser(null);
     localStorage.removeItem('beautyHue_user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, logout, loading, initialized }}>
       {children}
     </AuthContext.Provider>
   );
