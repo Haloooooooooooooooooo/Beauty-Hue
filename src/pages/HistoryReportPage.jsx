@@ -160,6 +160,15 @@ export default function HistoryReportPage({ onOpenLogin }) {
     URL.revokeObjectURL(url);
   };
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate('/history', { replace: true });
+  };
+
   if (loading) {
     return (
       <div className="bg-kraft min-h-screen flex items-center justify-center">
@@ -177,7 +186,7 @@ export default function HistoryReportPage({ onOpenLogin }) {
       <div className="bg-kraft min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted mb-4">{error || '报告不存在'}</p>
-          <button onClick={() => navigate('/history')} className="btn-cta">
+          <button onClick={handleBack} className="btn-cta">
             返回历史
           </button>
         </div>
@@ -215,7 +224,7 @@ export default function HistoryReportPage({ onOpenLogin }) {
           className="relative z-20 mb-4"
         >
           <button
-            onClick={() => navigate('/history')}
+            onClick={handleBack}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 text-sm text-navy border border-white/30 hover:bg-white/60 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
