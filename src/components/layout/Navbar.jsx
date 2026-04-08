@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar({ onOpenLogin }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -65,7 +66,11 @@ export default function Navbar({ onOpenLogin }) {
                 <button
                   onClick={() => {
                     setShowDropdown(false);
-                    navigate('/history');
+                    navigate('/history', {
+                      state: {
+                        from: `${location.pathname}${location.search}`,
+                      },
+                    });
                   }}
                   className="w-full px-4 py-2.5 text-left text-sm text-navy transition-colors hover:bg-kraft/30"
                 >

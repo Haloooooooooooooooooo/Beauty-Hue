@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, RotateCcw, Download, Sun, Palette, Eye, Heart, Waves, ArrowLeft } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
@@ -110,6 +110,7 @@ function getRoundFinalScore(round) {
 
 export default function HistoryReportPage({ onOpenLogin }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -161,12 +162,12 @@ export default function HistoryReportPage({ onOpenLogin }) {
   };
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-
-    navigate('/history', { replace: true });
+    navigate('/history', {
+      replace: true,
+      state: {
+        from: location.state?.from,
+      },
+    });
   };
 
   if (loading) {

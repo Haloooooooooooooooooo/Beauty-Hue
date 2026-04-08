@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertCircle, ArrowLeft, ChevronRight, History, Trash2 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
@@ -9,6 +9,7 @@ import { SEASONS } from '../data/seasonColors';
 
 export default function HistoryPage({ onOpenLogin }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, initialized } = useContext(AuthContext);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +39,25 @@ export default function HistoryPage({ onOpenLogin }) {
 
   const handleViewReport = (report) => {
     localStorage.setItem('beautyHue_historyReport', JSON.stringify(report));
-    navigate(`/history-report?id=${report.id}`);
+    navigate(`/history-report?id=${report.id}`, {
+      state: {
+        from: location.state?.from || `${location.pathname}${location.search}`,
+      },
+    });
+  };
+
+  const handleBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+      return;
+    }
+
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate('/', { replace: true });
   };
 
   const handleDeleteReport = async (reportId) => {
@@ -81,7 +100,7 @@ export default function HistoryPage({ onOpenLogin }) {
           <div className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-navy/10">
               <button
-                onClick={() => navigate(-1)}
+                onClick={handleBack}
                 className="relative z-20 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-navy/10 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-navy" />

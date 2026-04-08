@@ -5,6 +5,9 @@
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC?logo=tailwindcss)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3FCF8E?logo=supabase)
+![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?logo=vercel)
+
+**在线体验**：[beautyhue.vercel.app](https://beautyhue.vercel.app)
 
 ---
 
@@ -109,6 +112,29 @@ npm run build
 # 预览构建结果
 npm run preview
 ```
+
+### Vercel 部署
+
+项目已配置 `vercel.json` 支持 SPA 路由重定向，一键部署到 Vercel：
+
+```bash
+# 安装 Vercel CLI
+npm i -g vercel
+
+# 登录并部署
+vercel
+
+# 生产部署
+vercel --prod
+```
+
+**环境变量**（在 Vercel Dashboard 中配置）：
+
+| 变量名 | 说明 |
+|--------|------|
+| `VITE_SUPABASE_URL` | Supabase 项目 URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase 匿名密钥 |
+| `VITE_PUBLIC_APP_URL` | 应用公开 URL（可选） |
 
 ---
 
